@@ -2,7 +2,7 @@
 """
 
 
-def getgen(count=1000):
+def multiples(count=1000):
     """Generation of the multiples 3 or 5
     """
     for i in range(1, count):
@@ -13,7 +13,7 @@ def getgen(count=1000):
 def main():
     """Function main
     """
-    print sum(getgen(10000))
+    print sum(multiples(10000))
 
 
 if __name__ == '__main__':
