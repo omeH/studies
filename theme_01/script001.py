@@ -3,14 +3,19 @@
 
 
 def getgen(count=1000):
+    """Generation of the multiples 3 or 5
+    """
     for i in range(1, count):
-        if i%3==0 or i%5==0:
+        if i%3 == 0 or i%5 == 0:
             yield i
 
 
 def main():
+    """Function main
+    """
     print sum(getgen(10000))
 
 
 if __name__ == '__main__':
     main()
+
