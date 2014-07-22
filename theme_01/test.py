@@ -1,19 +1,22 @@
 """Testing the module naturalnambers
 """
-from sys import argv
+# from sys import argv
 
-from naturalnumbers import sum_
+from naturalnumbers import multiples
 
 
 def main():
     """Function main
     """
-    arglist = argv
-    if len(arglist) == 1:
-        sum_(1000)
-    else:
-        for i in arglist[1:]:
-            sum_(int(i))
+    values = [0, 1, 10, 100, -1, 'spam', []]
+    for i in values:
+        try:
+            sum_ = sum(multiples(i))
+        except:
+            print('Bad value: {}'.format(i))
+        else:
+            if sum_ != 0:
+                print('Expected value is {}, actual is {}'.format(i, sum_))
 
 
 if __name__ == '__main__':
