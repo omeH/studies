@@ -9,9 +9,3 @@ def multiples(count):
         if i%3 == 0 or i%5 == 0:
             yield i
 
-
-def sum_(arg):
-    """Sum of nambers
-    """
-    print sum(multiples(arg))
-
