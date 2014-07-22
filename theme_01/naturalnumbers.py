@@ -2,7 +2,7 @@
 """
 
 
-def multiples(count=1000):
+def multiples(count):
     """Generation of the multiples 3 or 5
     """
     for i in range(1, count):
@@ -10,12 +10,8 @@ def multiples(count=1000):
             yield i
 
 
-def main():
-    """Function main
+def sum_(arg):
+    """Sum of nambers
     """
-    print sum(multiples(10000))
-
-
-if __name__ == '__main__':
-    main()
+    print sum(multiples(arg))
 
