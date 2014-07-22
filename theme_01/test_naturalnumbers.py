@@ -30,12 +30,12 @@ def main():
         print('Expected value is {}, actual is {}'.format(-23, sum_5))
     # Data 'spam', expected value <exception>
     try:
-        sum_spam = sum(multiples('spam'))
+        sum_6 = sum(multiples('spam'))
     except TypeError:
         print('ERROR: value is {}'.format('spam'))
     # Data [], expected value <exception>
     try:
-        sum_list = sum(multiples([]))
+        sum_7 = sum(multiples([]))
     except TypeError:
         print('ERROR: value is {}'.format([]))
 
