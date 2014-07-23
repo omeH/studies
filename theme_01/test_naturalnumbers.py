@@ -20,14 +20,14 @@ def main():
     sum_3 = sum(multiples(10))
     if sum_3 != 23:
         print('Expected value is {}, actual is {}'.format(23, sum_3))
-    # Data -1, expected value 0
+    # Data -1, expected value None
     sum_4 = sum(multiples(-1))
-    if sum_4 != 0:
-        print('Expected value is {}, actual is {}'.format(0, sum_4))
-    # Data -10, expected value -23
+    if sum_4:
+        print('Expected value is {}, actual is {}'.format(None, sum_4))
+    # Data -10, expected value None
     sum_5 = sum(multiples(-10))
-    if sum_5 != -23:
-        print('Expected value is {}, actual is {}'.format(-23, sum_5))
+    if sum_5:
+        print('Expected value is {}, actual is {}'.format(None, sum_5))
     # Data 'spam', expected value <exception>
     try:
         sum(multiples('spam'))
