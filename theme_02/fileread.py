@@ -12,18 +12,28 @@ import sys
 import os
 
 
+def write(arg):
+    """FUnction writes content to standart output
+    """
+    while True:
+        line = arg.read(256)
+        if not  line:
+            break
+        sys.stdout.write(line)
+
+
 def main():
     """Function to read files
     """
     if len(sys.argv) == 1:
-        sys.stdout.write(sys.stdin.read())
+        write(sys.stdin)
         return
     files = sys.argv[1:]
     for file_ in files:
         if os.access(file_, os.F_OK):
             if os.access(file_, os.R_OK):
                 file_ = open(file_)
-                sys.stdout.write(file_.read())
+                write(file_)
                 file_.close()
                 # sys.stdout.write(open(file_).read())
             else:
