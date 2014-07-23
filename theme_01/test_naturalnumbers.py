@@ -24,20 +24,24 @@ def main():
     sum_4 = sum(multiples(-1))
     if sum_4 != 0:
         print('Expected value is {}, actual is {}'.format(0, sum_4))
-    # Data -10, expected value 23
+    # Data -10, expected value -23
     sum_5 = sum(multiples(-10))
     if sum_5 != -23:
         print('Expected value is {}, actual is {}'.format(-23, sum_5))
     # Data 'spam', expected value <exception>
     try:
-        sum_6 = sum(multiples('spam'))
+        sum(multiples('spam'))
     except TypeError:
-        print('ERROR: value is {}'.format('spam'))
+        pass
+    else:
+        print('ERROR: excepted TypeError, but got no exception')
     # Data [], expected value <exception>
     try:
-        sum_7 = sum(multiples([]))
+        sum(multiples([]))
     except TypeError:
-        print('ERROR: value is {}'.format([]))
+        pass
+    else:
+        print('ERROR: excepted TypeError, but got no exception')
 
 
 if __name__ == '__main__':
