@@ -1,13 +1,16 @@
 """The module read the file contents.
-In the absence of input file, reading comes from the standart input.
---------------------------------------------------------------------
-Format:
-    fileread [filename...]
---------------------------------------------------------------------
-Display the contents of the files produced on standart output.
+
+USsage:
+    fileread.py [filename ...]
+
+Description:
+    In the absence of input file, reading comes from the standart input.
+    Display the contents of the files produced on standart output.
 """
 
 import sys
+import os
+
 
 def main():
     """Function to read files
@@ -17,14 +20,16 @@ def main():
         return
     files = sys.argv[1:]
     for file_ in files:
-        try:
-            file_ = open(file_)
-            # sys.stdout.write(open(file_).read())
-        except IOError:
-            sys.stderr.write('File \'{}\' not found\n'.format(file_))
+        if os.access(file_, os.F_OK):
+            if os.access(file_, os.R_OK):
+                file_ = open(file_)
+                sys.stdout.write(file_.read())
+                file_.close()
+                # sys.stdout.write(open(file_).read())
+            else:
+                sys.stderr.write('Error: access deniad \'{}\'\n'.format(file_))
         else:
-            sys.stdout.write(file_.read())
-            file_.close()
+            sys.stderr.write('Error: file \'{}\' not found\n'.format(file_))
 
 
 if __name__ == '__main__':
