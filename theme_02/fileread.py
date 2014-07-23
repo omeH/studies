@@ -18,9 +18,13 @@ def main():
     files = sys.argv[1:]
     for file_ in files:
         try:
-            sys.stdout.write(open(file_).read())
+            file_ = open(file_)
+            # sys.stdout.write(open(file_).read())
         except IOError:
             sys.stderr.write('File \'{}\' not found\n'.format(file_))
+        else:
+            sys.stdout.write(file_.read())
+            file_.close()
 
 
 if __name__ == '__main__':
