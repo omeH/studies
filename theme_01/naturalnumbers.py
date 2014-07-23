@@ -5,7 +5,10 @@
 def multiples(count):
     """Generation of the multiples 3 or 5
     """
-    for i in range(1, count):
-        if i%3 == 0 or i%5 == 0:
-            yield i
+    if count >= 0:
+        for i in range(1, count):
+            if i%3 == 0 or i%5 == 0:
+                yield i
+    else:
+        return
 
