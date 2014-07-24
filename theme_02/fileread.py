@@ -1,45 +1,43 @@
 """The module read the file contents.
 
-USsage:
+Usage:
     fileread.py [filename ...]
 
 Description:
-    In the absence of input file, reading comes from the standart input.
-    Display the contents of the files produced on standart output.
+    In the absence of input file, reading comes from the standard input.
+    Display the contents of the files produced on standard output.
 """
 
 import sys
-import os
 
 
-def write(arg):
-    """FUnction writes content to standart output
+def transfer(file_):
+    """This function reads data from a file blocks and writes them to
+    standard output.
     """
+    buffer_size = 256
     while True:
-        line = arg.read(256)
-        if not  line:
+        line = file_.read(buffer_size)
+        if not line:
             break
         sys.stdout.write(line)
 
 
 def main():
-    """Function to read files
+    """The main function
     """
     if len(sys.argv) == 1:
-        write(sys.stdin)
+        transfer(sys.stdin)
         return
     namefiles = sys.argv[1:]
     for name in namefiles:
-        if os.access(file_, os.F_OK):
-            if os.access(file_, os.R_OK):
-                file_ = open(name)
-                write(file_)
-                file_.close()
-                # sys.stdout.write(open(file_).read())
-            else:
-                sys.stderr.write('Error: access deniad \'{}\'\n'.format(file_))
-        else:
-            sys.stderr.write('Error: file \'{}\' not found\n'.format(file_))
+        try:
+            file_ = open(name)
+            transfer(file_)
+            file_.close()
+            # sys.stdout.write(open(file_).read())
+        except IOError:
+            print(sys.stderr.write(IOError))
 
 
 if __name__ == '__main__':
