@@ -49,7 +49,7 @@ def main():
             file_.close()
             # sys.stdout.write(open(file_).read())
         except IOError as error:
-            sys.stderr.write('fileread.py: {}\n'.format(error.strerror))
+            sys.stderr.write('fileread.py: {}\n'.format(error))
             sys.exit(1)
 
 
