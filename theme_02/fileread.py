@@ -29,15 +29,15 @@ def main():
     if len(sys.argv) == 1:
         transfer(sys.stdin)
         return
-    namefiles = sys.argv[1:]
-    for name in namefiles:
+    file_names = sys.argv[1:]
+    for name in file_names:
         try:
             file_ = open(name)
             transfer(file_)
             file_.close()
             # sys.stdout.write(open(file_).read())
-        except IOError:
-            print(sys.stderr.write(IOError))
+        except IOError as error:
+            print(sys.stderr.write('Error: {}\n'.format(error.strerror)))
 
 
 if __name__ == '__main__':
