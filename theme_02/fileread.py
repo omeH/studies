@@ -28,11 +28,11 @@ def main():
     if len(sys.argv) == 1:
         write(sys.stdin)
         return
-    files = sys.argv[1:]
-    for file_ in files:
+    namefiles = sys.argv[1:]
+    for name in namefiles:
         if os.access(file_, os.F_OK):
             if os.access(file_, os.R_OK):
-                file_ = open(file_)
+                file_ = open(name)
                 write(file_)
                 file_.close()
                 # sys.stdout.write(open(file_).read())
