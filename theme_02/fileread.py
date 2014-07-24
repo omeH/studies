@@ -27,7 +27,10 @@ def main():
     """The main function
     """
     if len(sys.argv) == 1:
-        transfer(sys.stdin)
+        if sys.stdin.fileno():
+            transfer(sys.stdin)
+        else:
+            sys.stderr.write('Error: stdin empty\n')
         return
     file_names = sys.argv[1:]
     for name in file_names:
@@ -37,7 +40,7 @@ def main():
             file_.close()
             # sys.stdout.write(open(file_).read())
         except IOError as error:
-            print(sys.stderr.write('Error: {}\n'.format(error.strerror)))
+            sys.stderr.write('Error: {}\n'.format(error.strerror))
 
 
 if __name__ == '__main__':
