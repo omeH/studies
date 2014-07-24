@@ -11,11 +11,13 @@ import signal
 
 import sys
 
+BUFFER_SIZE = 256
 
-def hundler(error, stack):
+
+def sigint_handler(error, stack):
     """Handler keystrokes CTRL+C
     """
-    sys.stderr.write(': {}\n'.format(error))
+    sys.stderr.write('\n')
     sys.exit(1)
 
 
@@ -23,9 +25,8 @@ def transfer(file_):
     """This function reads data from a file blocks and writes them to
     standard output.
     """
-    buffer_size = 256
     while True:
-        line = file_.read(buffer_size)
+        line = file_.read(BUFFER_SIZE)
         if not line:
             break
         sys.stdout.write(line)
@@ -34,7 +35,7 @@ def transfer(file_):
 def main():
     """The main function
     """
-    signal.signal(signal.SIGINT, hundler)
+    signal.signal(signal.SIGINT, sigint_handler)
     if len(sys.argv) == 1:
         transfer(sys.stdin)
         sys.exit(0)
@@ -50,7 +51,9 @@ def main():
             # sys.stdout.write(open(file_).read())
         except IOError as error:
             sys.stderr.write('fileread.py: {}\n'.format(error))
-            sys.exit(1)
+        else:
+            sys.exit(0)
+    sys.exit(1)
 
 
 if __name__ == '__main__':
