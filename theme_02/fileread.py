@@ -13,7 +13,7 @@ import sys
 
 
 def hundler(error, stack):
-    """Handler keystriles CTRL+C
+    """Handler keystrokes CTRL+C
     """
     sys.stderr.write(': {}\n'.format(error))
     sys.exit(1)
