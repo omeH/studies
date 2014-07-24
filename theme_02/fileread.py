@@ -7,8 +7,16 @@ Description:
     In the absence of input file, reading comes from the standard input.
     Display the contents of the files produced on standard output.
 """
+import signal
 
 import sys
+
+
+def hundler(error, stack):
+    """Handler keystriles CTRL+C
+    """
+    sys.stderr.write(': {}\n'.format(error))
+    sys.exit(1)
 
 
 def transfer(file_):
@@ -26,12 +34,13 @@ def transfer(file_):
 def main():
     """The main function
     """
+    signal.signal(signal.SIGINT, hundler)
     if len(sys.argv) == 1:
-        if sys.stdin.fileno():
-            transfer(sys.stdin)
-        else:
-            sys.stderr.write('Error: stdin empty\n')
-        return
+        transfer(sys.stdin)
+        sys.exit(0)
+    if sys.argv[1] == '-h':
+        print(__doc__)
+        sys.exit(0)
     file_names = sys.argv[1:]
     for name in file_names:
         try:
@@ -40,7 +49,8 @@ def main():
             file_.close()
             # sys.stdout.write(open(file_).read())
         except IOError as error:
-            sys.stderr.write('Error: {}\n'.format(error.strerror))
+            sys.stderr.write('fileread.py: {}\n'.format(error.strerror))
+            sys.exit(1)
 
 
 if __name__ == '__main__':
