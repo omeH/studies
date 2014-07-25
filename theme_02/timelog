@@ -1,0 +1,21 @@
+1b	python fileread.py test.bin,	uesr: 82.56,	syste: 0.40,	CPU: 89%,	Total: 92.65
+	python filewrite.py out,	uesr: 91.68,	syste: 0.31,	CPU: 99%,	Total: 92.73
+2**8b	python fileread.py test.bin,	uesr: 0.56,	syste: 0.16,	CPU: 61%,	Total: 1.19
+	python filewrite.py out,	uesr: 0.66,	syste: 0.25,	CPU: 40%,	Total: 2.26
+2**10b	python fileread.py test.bin,	uesr: 0.30,	syste: 0.20,	CPU: 44%,	Total: 1.15
+	python filewrite.py out,	uesr: 0.26,	syste: 0.42,	CPU: 30%,	Total: 2.24
+2**12b	python fileread.py test.bin,	uesr: 0.10,	syste: 0.30,	CPU: 33%,	Total: 1.20
+	python filewrite.py out,	uesr: 0.14,	syste: 0.40,	CPU: 24%,	Total: 2.20
+2**14b	python fileread.py test.bin,	uesr: 0.06,	syste: 0.20,	CPU: 21%,	Total: 1.25
+	python filewrite.py out,	uesr: 0.08,	syste: 0.34,	CPU: 19%,	Total: 2.21
+2**16b	python fileread.py test.bin,	uesr: 0.08,	syste: 0.15,	CPU: 18%,	Total: 1.31
+	python filewrite.py out,	uesr: 0.07,	syste: 0.31,	CPU: 17%,	Total: 2.24
+2**18b	python fileread.py test.bin,	uesr: 0.05,	syste: 0.19,	CPU: 18%,	Total: 1.36
+	python filewrite.py out,	uesr: 0.05,	syste: 0.39,	CPU: 19%,	Total: 2.26
+2**20b	python fileread.py test.bin,	uesr: 0.03,	syste: 0.32,	CPU: 25%,	Total: 1.40
+	python filewrite.py out,	uesr: 0.04,	syste: 0.51,	CPU: 24%,	Total: 2.27
+2**30b	python fileread.py test.bin,	uesr: 0.03,	syste: 0.19,	CPU: 58%,	Total: 0.39
+	python filewrite.py out,	uesr: 0.02,	syste: 0.43,	CPU: 17%,	Total: 2.55
+2**31b	python fileread.py test.bin,	uesr: 0.01,	syste: 0.22,	CPU: 58%,	Total: 0.40
+	python filewrite.py out,	uesr: 0.03,	syste: 0.40,	CPU: 16%,	Total: 2.73
+
