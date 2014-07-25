@@ -12,7 +12,11 @@ import signal
 
 import sys
 
-BUFFER_SIZE = 2**20
+import const
+
+BUFFER_SIZE = const.BUFFER_SIZE
+STDIN = sys.stdin
+STDOUT = sys.stdout
 
 
 def sigint_handler(error, stack):
@@ -27,7 +31,7 @@ def transfer(file_):
     writes to file.
     """
     while True:
-        block = sys.stdin.read(BUFFER_SIZE)
+        block = STDIN.read(BUFFER_SIZE)
         if not block:
             break
         file_.write(block)
@@ -37,6 +41,7 @@ def main():
     """The main function
     """
     signal.signal(signal.SIGINT, sigint_handler)
+    const.setmode([STDIN, STDOUT])
     errorstr = 'Filewrite.py: missing operand specifiels the file.\n' + \
         'Get more informaition on the command: "filewrite.py -h\n'
     if len(sys.argv) == 1:
@@ -46,7 +51,7 @@ def main():
         print(__doc__)
         sys.exit(0)
     try:
-        file_ = open(sys.argv[1], 'w')
+        file_ = open(sys.argv[1], 'wb')
         transfer(file_)
         file_.close()
     except IOError as error:

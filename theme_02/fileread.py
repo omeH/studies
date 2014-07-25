@@ -11,8 +11,11 @@ import signal
 
 import sys
 
-BUFFER_SIZE = 2**20
+import const
 
+BUFFER_SIZE = const.BUFFER_SIZE
+STDIN = sys.stdin
+STDOUT = sys.stdout
 
 def sigint_handler(error, stack):
     """Handler keystrokes CTRL+C
@@ -36,8 +39,9 @@ def main():
     """The main function
     """
     signal.signal(signal.SIGINT, sigint_handler)
+    const.setmode([STDIN, STDOUT])
     if len(sys.argv) == 1:
-        transfer(sys.stdin)
+        transfer(STDIN)
         sys.exit(0)
     if sys.argv[1] == '-h':
         print(__doc__)
@@ -46,7 +50,7 @@ def main():
     error = 0
     for name in file_names:
         try:
-            file_ = open(name)
+            file_ = open(name, 'rb')
             transfer(file_)
             file_.close()
             # sys.stdout.write(open(file_).read())
