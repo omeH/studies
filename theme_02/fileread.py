@@ -11,7 +11,7 @@ import signal
 
 import sys
 
-BUFFER_SIZE = 256
+BUFFER_SIZE = 2**20
 
 
 def sigint_handler(error, stack):
@@ -43,6 +43,7 @@ def main():
         print(__doc__)
         sys.exit(0)
     file_names = sys.argv[1:]
+    error = 0
     for name in file_names:
         try:
             file_ = open(name)
@@ -51,9 +52,10 @@ def main():
             # sys.stdout.write(open(file_).read())
         except IOError as error:
             sys.stderr.write('fileread.py: {}\n'.format(error))
-        else:
-            sys.exit(0)
-    sys.exit(1)
+    if error:
+        sys.exit(1)
+    else:
+        sys.exit(0)
 
 
 if __name__ == '__main__':

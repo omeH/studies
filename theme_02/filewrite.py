@@ -12,7 +12,7 @@ import signal
 
 import sys
 
-BUFFER_SIZE = 256
+BUFFER_SIZE = 2**20
 
 
 def sigint_handler(error, stack):
