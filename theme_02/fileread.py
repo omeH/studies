@@ -32,7 +32,7 @@ def transfer(file_):
         line = file_.read(BUFFER_SIZE)
         if not line:
             break
-        sys.stdout.write(line)
+        STDOUT.write(line)
 
 
 def main():
