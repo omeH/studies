@@ -9,14 +9,9 @@ Description:
 """
 
 import signal
-
 import sys
 
 import const
-
-BUFFER_SIZE = const.BUFFER_SIZE
-STDIN = sys.stdin
-STDOUT = sys.stdout
 
 
 def sigint_handler(error, stack):
@@ -31,7 +26,7 @@ def transfer(file_):
     writes to file.
     """
     while True:
-        block = STDIN.read(BUFFER_SIZE)
+        block = sys.stdin.read(const.BUFFER_SIZE)
         if not block:
             break
         file_.write(block)
@@ -41,7 +36,7 @@ def main():
     """The main function
     """
     signal.signal(signal.SIGINT, sigint_handler)
-    const.setmode([STDIN, STDOUT])
+    const.setmode([sys.stdin, sys.stdout])
     errorstr = 'Filewrite.py: missing operand specifiels the file.\n' + \
         'Get more informaition on the command: "filewrite.py -h\n'
     if len(sys.argv) == 1:

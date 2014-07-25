@@ -8,14 +8,10 @@ Description:
     Display the contents of the files produced on standard output.
 """
 import signal
-
 import sys
 
 import const
 
-BUFFER_SIZE = const.BUFFER_SIZE
-STDIN = sys.stdin
-STDOUT = sys.stdout
 
 def sigint_handler(error, stack):
     """Handler keystrokes CTRL+C
@@ -29,19 +25,19 @@ def transfer(file_):
     standard output.
     """
     while True:
-        line = file_.read(BUFFER_SIZE)
+        line = file_.read(const.BUFFER_SIZE)
         if not line:
             break
-        STDOUT.write(line)
+        sys.stdout.write(line)
 
 
 def main():
     """The main function
     """
     signal.signal(signal.SIGINT, sigint_handler)
-    const.setmode([STDIN, STDOUT])
+    const.setmode([sys.stdin, sys.stdout])
     if len(sys.argv) == 1:
-        transfer(STDIN)
+        transfer(sys.stdin)
         sys.exit(0)
     if sys.argv[1] == '-h':
         print(__doc__)
