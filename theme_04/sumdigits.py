@@ -27,10 +27,10 @@ def factorial(n):
     return res
 
 
-def sumDigits(namber):
+def sumDigits(number):
     """This function calculates the sum of the digits for number
     """
-    return sum([int(i) for i in str(namber)])
+    return sum([int(i) for i in str(number)]) if number else None
 
 
 def main():
