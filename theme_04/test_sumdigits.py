@@ -1,42 +1,53 @@
 """Testing the module sudigits
 """
 
-from sumdigits import factorial, sumDigits
+from sumdigits import factorial, sum_digits, FactorialException
+
+
+def test_0():
+    """Testing the factorial() with value 0
+    """
+    sum_ = sum_digits(factorial(0))
+    if sum_ != 1:
+        print('Test_0: expected value is {}, actual is {}'.format(0, sum_))
+
+
+def test_positive(data, value):
+    """Testing the factorial() with value positive
+    """
+    sum_ = sum_digits(factorial(data))
+    if sum_ != value:
+        print('Test_positive: Expected value is {}, '.format(value) +
+              'actual is {}'.format(sum_))
+
+
+def test_exception(data, msg):
+    """Testing the factorial() to exception
+    """
+    try:
+        sum_digits(factorial(data))
+    except FactorialException:
+        pass
+    else:
+        print('Test exception: excepted \'{}\', '.format(msg) +
+              'but got no exception\n')
 
 
 def main():
     """The main function
     """
     # Data 0, expected value 1
-    sum_1 = sumDigits(factorial(0))
-    if sum_1 != 1:
-        print('Expected value is {}, actual is {}'.format(0, sum_1))
+    test_0()
     # Data 5, expected value 3
-    sum_2 = sumDigits(factorial(5))
-    if sum_2 != 3:
-        print('Expected value is {}, actual is {}'.format(0, sum_2))
+    test_positive(5, 3)
     # Data 10, expected value 27
-    sum_3 = sumDigits(factorial(10))
-    if sum_3 != 27:
-        print('Expected value is {}, actual is {}'.format(0, sum_3))
-    # Data -10, expected value None
-    sum_4 = sumDigits(factorial(-10))
-    if sum_4 is not None:
-        print('Expected value is {}, actual is {}'.format(0, sum_4))
+    test_positive(10, 27)
+    # Data -10, expected value <exception>
+    test_exception(-10, 'negative int')
     # Data 'str', expected value <exception>
-    try:
-        sumDigits(factorial('str'))
-    except TypeError:
-        pass
-    else:
-        print('Error: excepted TypeError, but got no exception')
+    test_exception('str', 'not int')
     # Data [], expected value <exception>
-    try:
-        sumDigits(factorial([]))
-    except TypeError:
-        pass
-    else:
-        print('Error: excepted TypeError, but got no exception')
+    test_exception([], 'not int')
 
 
 if __name__ == '__main__':
