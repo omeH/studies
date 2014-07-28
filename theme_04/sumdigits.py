@@ -17,22 +17,19 @@ import sys
 
 
 class FactorialException(Exception):
-    def __init__(self, value):
-        self.value = value
-
-    def __str__(self):
-        return repr(self.value)
+    pass
 
 
-def str_to_int(numbers):
+def str_to_int(number):
     """This function converts the number represented as a string in int.
     If this is not possible, the value doesn't change.
     """
-    for number in numbers:
-        try:
-            yield int(number)
-        except ValueError:
-            yield number
+    try:
+        return int(number)
+    except ValueError:
+        return None
+    except TypeError:
+        return None
 
 
 def factorial(number):
@@ -72,12 +69,13 @@ def main():
         sys.stdout.write(__doc__)
         sys.exit(0)
 
-    for number in str_to_int(sys.argv[1:]):
+    numbers = [str_to_int(i) if str_to_int(i) else i for i in sys.argv[1:]]
+    for number in numbers:
         try:
             sum_ = sum_digits(factorial(number))
             sys.stdout.write('Sum of digits {}!: {}\n'.format(number, sum_))
         except FactorialException as error:
-            sys.stderr.write('FactorialException: {}\n'.format(error.value))
+            sys.stderr.write('FactorialException: {}\n'.format(error))
 
 
 if __name__ == '__main__':
