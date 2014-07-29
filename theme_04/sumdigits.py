@@ -49,7 +49,7 @@ def str_to_int(number):
 def factorial(number):
     """This function finds the value of number!
     """
-    if not isinstance(number, int):
+    if not isinstance(number, int) and not isinstance(number, long):
         raise FactorialException('invalid literal for factorial(): ' +
                                  '\'{}\' not int'.format(number))
     if number < 0:
@@ -66,7 +66,7 @@ def factorial(number):
 def sum_digits(number):
     """This function calculates the sum of the digits for number
     """
-    if not isinstance(number, int):
+    if not isinstance(number, int) and not isinstance(number, long):
         raise SumDigitsException('invalid literal for factorial(): ' +
                                  '\'{}\' not int'.format(number))
 
@@ -93,9 +93,10 @@ def main():
             if number is None:
                 sys.stderr.write('FactorialException: invalid literal for ' +
                                  'factorial(): \'{}\' not int\n'.format(arg))
-            else:
-                sum_ = sum_digits(factorial(number))
-                sys.stdout.write('Sum of digits {}!: {}\n'.format(number, sum_))
+                continue
+
+            sum_ = sum_digits(factorial(number))
+            sys.stdout.write('Sum of digits {}!: {}\n'.format(number, sum_))
         except ModuleBaseException as error:
             sys.stderr.write('FactorialException: {}\n'.format(error))
 
