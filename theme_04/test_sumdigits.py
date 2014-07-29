@@ -1,8 +1,7 @@
 """Testing the module sudigits
 """
 
-from sumdigits import factorial, sum_digits
-from sumdigits import FactorialException, SumDigitsException
+from sumdigits import factorial, sum_digits, ModuleBaseException
 
 
 def test_positive(data, value):
@@ -28,7 +27,7 @@ def test_exception_factorial(data, msg):
     """
     try:
         sum_digits(factorial(data))
-    except FactorialException:
+    except ModuleBaseException:
         pass
     else:
         print('Test exception factorial: excepted \'{}\', '.format(msg) +
@@ -40,7 +39,7 @@ def test_exception_sum_digits(data, msg):
     """
     try:
         sum_digits(data)
-    except SumDigitsException:
+    except ModuleBaseException:
         pass
     else:
         print('Test exception sum_digits: excepted \'{}\', '.format(msg) +
