@@ -4,16 +4,8 @@
 from sumdigits import factorial, sum_digits, FactorialException
 
 
-def test_0():
-    """Testing the factorial() with value 0
-    """
-    sum_ = sum_digits(factorial(0))
-    if sum_ != 1:
-        print('Test_0: expected value is {}, actual is {}'.format(0, sum_))
-
-
 def test_positive(data, value):
-    """Testing the factorial() with value positive
+    """Testing the factorial() with value positive and 0
     """
     sum_ = sum_digits(factorial(data))
     if sum_ != value:
@@ -37,7 +29,7 @@ def main():
     """The main function
     """
     # Data 0, expected value 1
-    test_0()
+    test_positive(0, 1)
     # Data 5, expected value 3
     test_positive(5, 3)
     # Data 10, expected value 27
