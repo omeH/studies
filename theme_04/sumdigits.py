@@ -34,6 +34,13 @@ class SumDigitsException(ModuleBaseException):
     pass
 
 
+def is_integer(number):
+    """This function checks whether a number is an int or long type
+    """
+    return True if not isinstance(number, int) and \
+        not isinstance(number, long) else False
+
+
 def str_to_int(number):
     """This function converts the number represented as a string in int.
     If this is not possible, the value doesn't change.
@@ -49,7 +56,7 @@ def str_to_int(number):
 def factorial(number):
     """This function finds the value of number!
     """
-    if not isinstance(number, int) and not isinstance(number, long):
+    if is_integer(number):
         raise FactorialException('invalid literal for factorial(): ' +
                                  '\'{}\' not int'.format(number))
     if number < 0:
@@ -66,7 +73,7 @@ def factorial(number):
 def sum_digits(number):
     """This function calculates the sum of the digits for number
     """
-    if not isinstance(number, int) and not isinstance(number, long):
+    if is_integer(number):
         raise SumDigitsException('invalid literal for factorial(): ' +
                                  '\'{}\' not int'.format(number))
 
