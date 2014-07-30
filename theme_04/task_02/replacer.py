@@ -6,7 +6,8 @@ in all underluing directories.
 Usage:
     scandir.py  [-d DIRECTORY] -p PATTERN -r REPLACE
                 [--directory=DIRECTORY] --pattern=PATTERN --replace=REPLACE
-                [-h] [--help]
+                [-f FILTER] [--filter=FILTER] [-h] [--help]
+                [-s] [--secret]
 
 Description:
     If you specify derictory, the bypass is perfoemed for this derictory.
@@ -19,6 +20,9 @@ Description:
 Options:
     -d DIRECTORY, --directory=DIRECTORY
         Parametr takes the initial directory.
+
+    -f FILTER, --filter=FILTER
+        Set the file type to change.
 
     -h, --help
         Print help on the module and exit.
@@ -62,12 +66,16 @@ def parse_args():
     # Overriding
     parser.print_help = print_help
 
+    parser.add_argument('-p', '--pattern', type=str,
+                        help='Source srting')
+    parser.add_argument('-r', '--replace', type=str,
+                        help='Replace string')
     parser.add_argument('-d', '--directory', type=str, default=os.getcwd(),
                         help='Directory traversal')
-    parser.add_argument('-p', '--pattern', type=str,
-                        help='Source srting', required=True)
-    parser.add_argument('-r', '--replace', type=str,
-                        help='Replace string', required=True)
+    parser.add_argument('-f', '--filter', type=str,
+                        help='Sets the file type')
+    parser.add_argument('-s', '--secret', type=str,
+                        help='Type file')
 
     return parser.parse_args()
 
@@ -82,6 +90,18 @@ def file_error(file_name, mode):
         sys.stderr.write('scandir.py: {}\n'.format(error))
 
     return res
+
+
+def file_filter(file_name, filter_, secret):
+    res = file_name.split('/')[-1].split('.')
+
+    if res[0] and secret:
+        return True
+
+    if res[-1] == filter_:
+        return True
+
+    return False
 
 
 def parse_dir(directory):
@@ -100,26 +120,28 @@ def replace_str(file_name, source_line, replace_line):
     file_ = file_error(file_name, 'r')
     if file_ is None:
         return
-    lines = file_.readlines()
+    buffer_ = file_.read()
     file_.close()
+
+    count = buffer_.count(source_line)
+    if not count:
+        return
 
     file_ = file_error(file_name, 'w')
     if file_ is None:
         return
-    # size = 0
-    for line in lines:
-        # file_.seek(size)
-        # size += len(line)
-        file_.write(''.join([line.replace(source_line, replace_line)]))
+    file_.write(buffer_.replace(source_line, replace_line))
     file_.close()
 
 
 def main():
     """This main function
     """
-    options = parse_args()
-    for file_name in parse_dir(options.directory):
-        replace_str(file_name, options.pattern, options.replace)
+    opt = parse_args()
+    for file_name in parse_dir(opt.directory):
+        if not file_filter(file_name, opt.filter, opt.secret):
+            continue
+        replace_str(file_name, opt.pattern, opt.replace)
 
 
 if __name__ == '__main__':
