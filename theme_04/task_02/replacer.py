@@ -6,7 +6,7 @@ in all underluing directories.
 Usage:
     scandir.py  [-d DIRECTORY] -p PATTERN -r REPLACE
                 [--directory=DIRECTORY] --pattern=PATTERN --replace=REPLACE
-                [-f FILTER] [--filter=FILTER] [-h] [--help]
+                [-f FILTER] [--Filter-type=FILTER] [-h] [--help]
                 [-s] [--secret]
 
 Description:
@@ -66,15 +66,13 @@ def parse_args():
     # Overriding
     parser.print_help = print_help
 
-    parser.add_argument('-p', '--pattern', type=str,
-                        help='Source srting')
-    parser.add_argument('-r', '--replace', type=str,
-                        help='Replace string')
+    parser.add_argument('pattern', type=str, help='Source srting')
+    parser.add_argument('replace', type=str, help='Replace string')
     parser.add_argument('-d', '--directory', type=str, default=os.getcwd(),
                         help='Directory traversal')
-    parser.add_argument('-f', '--filter', type=str,
+    parser.add_argument('-f', '--Filter', type=str,
                         help='Sets the file type')
-    parser.add_argument('-s', '--secret', type=str,
+    parser.add_argument('-s', '--secret', action='store_true',
                         help='Type file')
 
     return parser.parse_args()
@@ -93,9 +91,12 @@ def file_error(file_name, mode):
 
 
 def file_filter(file_name, filter_, secret):
+    if not filter_:
+        return True
+
     res = file_name.split('/')[-1].split('.')
 
-    if res[0] and secret:
+    if not res[0] and secret:
         return True
 
     if res[-1] == filter_:
@@ -138,8 +139,9 @@ def main():
     """This main function
     """
     opt = parse_args()
+    print(opt)
     for file_name in parse_dir(opt.directory):
-        if not file_filter(file_name, opt.filter, opt.secret):
+        if not file_filter(file_name, opt.Filter, opt.secret):
             continue
         replace_str(file_name, opt.pattern, opt.replace)
 
