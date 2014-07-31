@@ -58,6 +58,46 @@ def print_help():
     sys.stdout.write(__doc__)
 
 
+def print_info(info, files, verbose, quiet):
+    if quiet:
+        sys.exit(0)
+
+    count = 0
+    status = {
+        0: 'error',
+        1: 'omitted',
+        2: 'processed'
+    }
+    sys.stdout.write('List of changes:\n')
+    if verbose:
+        tmp = files[0][0]
+        sys.stdout.write('{}\n'.format(tmp))
+        for file_ in files:
+            if file_[0] != tmp:
+                sys.stdout.write('\n{}\n'.format(tmp))
+                tmp = file_[0]
+            sys.stdout.write('\tIn file ->{}<- '.format(file_[1]) +
+                             'is entered {}'.format(file_[2]) +
+                             ' changes; ' +
+                             'status: {}\n'.format(status[file_[-1]]))
+            count += file_[2] if file_[2] > 0 else 0
+
+    if not verbose:
+        for file_ in files:
+            if file_[2] > 0:
+                sys.stdout.write('\tIn file ->{}<- '.format(file_[1]) +
+                                 'is entered {}'.format(file_[2]) +
+                                 ' changes\n')
+                count += file_[2]
+
+    sys.stdout.write('\nTotal find: ' +
+                     'directorys - {}, '.format(len(info['dirs'])) +
+                     'files - {}, '.format(info['files']) +
+                     'in {} files is entered '.format(info['replaces']) +
+                     '{} changes.\n'.format(count))
+    sys.exit(0)
+
+
 def parse_args():
     """Parse command line parameters passed to the module
     """
@@ -73,19 +113,26 @@ def parse_args():
     parser.add_argument('-f', '--Filter', type=str,
                         help='Sets the file type')
     parser.add_argument('-s', '--secret', action='store_true',
-                        help='Type file')
+                        help='Allow changes in hidden files')
+    parser.add_argument('-v', '--verbose', action='store_true',
+                        help='Print details information')
+    parser.add_argument('-q', '--quiet', action='store_true',
+                        help='Suppress information')
+    parser.add_argument('-e', '--error', action='store_true',
+                        help='Print error')
 
     return parser.parse_args()
 
 
-def file_error(file_name, mode):
+def file_error(file_name, mode, print_):
     """This function intercepts exceptions to the function open
     """
     res = None
     try:
         res = open(file_name, mode)
     except IOError as error:
-        sys.stderr.write('scandir.py: {}\n'.format(error))
+        if print_:
+            sys.stderr.write('scandir.py: {}\n'.format(error))
 
     return res
 
@@ -94,7 +141,8 @@ def file_filter(file_name, filter_, secret):
     if not filter_:
         return True
 
-    res = file_name.split('/')[-1].split('.')
+    # res = file_name.split('/')[-1].split('.')
+    res = file_name.split('.')
 
     if not res[0] and secret:
         return True
@@ -111,39 +159,57 @@ def parse_dir(directory):
     """
     for current, dirs, files in os.walk(directory):
         for file_ in files:
-            yield os.path.join(current, file_)
+            yield current, file_
 
 
-def replace_str(file_name, source_line, replace_line):
+def replace_str(directory, file_name, data):
     """This function searches the string source_line in the file and
     change it to reolace_line.
     """
-    file_ = file_error(file_name, 'r')
+    full_file_name = os.path.join(directory, file_name)
+    file_ = file_error(full_file_name, 'r', data.error)
     if file_ is None:
-        return
+        return -1, 0
     buffer_ = file_.read()
     file_.close()
 
-    count = buffer_.count(source_line)
+    count = buffer_.count(data.pattern)
     if not count:
-        return
+        return count, 1
 
-    file_ = file_error(file_name, 'w')
+    file_ = file_error(full_file_name, 'w', data.error)
     if file_ is None:
-        return
-    file_.write(buffer_.replace(source_line, replace_line))
+        return -1, 0
+    file_.write(buffer_.replace(data.pattern, data.replace))
     file_.close()
+
+    return count, 2
 
 
 def main():
     """This main function
     """
     opt = parse_args()
+    info = {
+        'dirs': set(),
+        'files': 0,
+        'replaces': 0
+    }
+    files = []
+
     print(opt)
-    for file_name in parse_dir(opt.directory):
+    for current, file_name in parse_dir(opt.directory):
+        info['dirs'].add(current)
+        info['files'] += 1
         if not file_filter(file_name, opt.Filter, opt.secret):
             continue
-        replace_str(file_name, opt.pattern, opt.replace)
+        count, status = replace_str(current, file_name, opt)
+        files.append((current, file_name, count, status))
+        if count > 0:
+            info['replaces'] += 1
+    # print(info)
+    print(files)
+    print_info(info, files, opt.verbose, opt.quiet)
 
 
 if __name__ == '__main__':

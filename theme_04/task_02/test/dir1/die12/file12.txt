@@ -1,2 +1,2 @@
-test spam maps test
-test spam maps test
+string spam maps test
+string spam maps test
