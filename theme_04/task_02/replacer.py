@@ -56,6 +56,7 @@ def print_help():
     """Print help docementation
     """
     sys.stdout.write(__doc__)
+    sys.exit(0)
 
 
 def print_info(info, files, verbose, quiet):
@@ -104,7 +105,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
 
     # Overriding
-    parser.print_help = print_help
+    # parser.print_help = print_help
 
     parser.add_argument('pattern', type=str, help='Source srting')
     parser.add_argument('replace', type=str, help='Replace string')
@@ -197,7 +198,7 @@ def main():
     }
     files = []
 
-    print(opt)
+    # print(opt)
     for current, file_name in parse_dir(opt.directory):
         info['dirs'].add(current)
         info['files'] += 1
@@ -208,7 +209,7 @@ def main():
         if count > 0:
             info['replaces'] += 1
     # print(info)
-    print(files)
+    # print(files)
     print_info(info, files, opt.verbose, opt.quiet)
 
 
