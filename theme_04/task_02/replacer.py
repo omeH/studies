@@ -204,13 +204,15 @@ def replace_str(directory, file_name, data):
         print_info(
             file_name=full_file_name,
             status=STATUS_ERROR,
-            verbose=data.verbose
+            verbose=data.verbose,
+            quiet=data.quiet
         )
         # Print information to processed
         print_info(
             file_name=full_file_name,
             verbose=data.verbose,
-            start=False
+            start=False,
+            quiet=data.quiet
         )
         return FILE_ERROR
 
@@ -230,7 +232,8 @@ def replace_str(directory, file_name, data):
             file_name=full_file_name,
             count=count_,
             verbose=data.verbose,
-            start=False
+            start=False,
+            quiet=data.quiet
         )
         return count_
 
@@ -246,7 +249,8 @@ def replace_str(directory, file_name, data):
         print_info(
             file_name=full_file_name,
             verbose=data.verbose,
-            start=False
+            start=False,
+            quiet=data.quiet
         )
         return FILE_ERROR
     # Print information to processing
@@ -260,7 +264,8 @@ def replace_str(directory, file_name, data):
         file_name=full_file_name,
         count=count_,
         verbose=data.verbose,
-        start=False
+        start=False,
+        quiet=data.quiet
     )
     file_.write(buffer_.replace(data.pattern, data.replace))
     file_.close()
