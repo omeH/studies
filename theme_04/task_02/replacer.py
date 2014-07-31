@@ -168,15 +168,13 @@ def suffix_filter(file_name, filter_):
     if not filter_:
         return True
 
-    name = file_name.split('.')
-    if not name[0]:
-        name = name[1:]
+    suffix = file_name.split('.')[-1]
 
     ext = filter_.split(',')
 
-    for i in ext:
-        if name[0].endswith(i):
-            return True
+    if suffix in ext:
+        return True
+
     return False
 
 
@@ -288,6 +286,7 @@ def main():
     info = {
         'dirs': set(),
         'files': 0,
+        'replaces': 0
     }
     count = 0
 
@@ -300,13 +299,15 @@ def main():
             continue
         info['files'] += 1
         count = replace_str(current, file_name, opt)
+        if count:
+            info['replaces'] += 1
     # print(info)
     # print(files)
     if not opt.quiet:
         sys.stdout.write('Total processed: ' +
                          'directorys - {}, '.format(len(info['dirs'])) +
                          'files - {}, '.format(info['files']) +
-                         'changes - {}.\n'.format(count))
+                         'changes - {}.\n'.format(info['replaces']))
 
 
 if __name__ == '__main__':
