@@ -5,7 +5,7 @@ in all underluing directories.
 
 Usage:
     scandir.py  PATTERN REPLACE [-d DIRECTORY] [--directory=DIRECTORY]
-                [-i FILTER] [--include-ext=FILTER] [-h] [--help]
+                [-t TEMPLATE] [--type-file=TEMPLATE] [-h] [--help]
                 [-s] [--secret]
 
 Description:
@@ -30,8 +30,12 @@ Options:
     -e, --error
         Includes error output.
 
-    -i FILTER, --include-ext=FILTER
-        Set the file type to change.
+    -t TEMPLATE, --type-file=TAMPLATE
+        Set the file type to change. The list of values with ','.
+
+    -i TEMPLATE, --include-ext=TAMPLATE
+        Set the suffix included in the file name.
+        The list of values with ','.
 
     -h, --help
         Print help on the module and exit.
@@ -49,11 +53,11 @@ import sys
 import argparse
 
 
-STATUS_ERROR = 0
-STATUS_OMITTED = 1
-STATUS_PROCESSED = 2
+STATUS_ERROR = 1
+STATUS_OMITTED = 2
+STATUS_PROCESSED = 3
 
-FILE_ERROR = -1
+FILE_ERROR = 0
 
 
 class ModuleBaseException(BaseException):
@@ -62,35 +66,43 @@ class ModuleBaseException(BaseException):
     pass
 
 
-class FileIOException(IOError):
-    """Exceptions generates by the IO error
+class ModuleParser(argparse.ArgumentParser):
+    """The class for overriding method print_help
     """
-    pass
+    def print_help(self, file_=None):
+        """Print help documentation
+        """
+        sys.stdout.write(__doc__ + '\n')
+        sys.exit(0)
 
 
-def print_help():
-    """Print help docementation
+def print_info(directory=None, file_name=None, count=0,
+               status=None, verbose=False, quiet=False, start=True):
+    """This function formats the output modes of information
     """
-    sys.stdout.write(__doc__)
-    sys.exit(0)
+    # Enable option -q or --quiet
+    if quiet:
+        return
 
-
-def print_info_2(directory, file_name=None,
-                 count=0, status=None, include_ext=False, start=True):
+    mode = {
+        1: 'error',
+        2: 'omitted',
+        3: 'processed'
+    }
     # Enable option -i or --include-ext
-    if include_ext:
+    if verbose:
         if directory:
-            print_info_2.current_directory = directory
-            sys.stdout.write('Processing directory - {}'.format(directory))
+            print_info.current_directory = directory
+            sys.stdout.write('Processing directory - {}\n'.format(directory))
             return
 
         if start:
             sys.stdout.write('\tProcesseing file - {}, '.format(file_name) +
-                             'status: {}\n'.format(status))
+                             'status: {}\n'.format(mode[status]))
             return
 
         sys.stdout.write('\tProcessed file - {}, '.format(file_name) +
-                         '{} - replacements\n'.format(count))
+                         '{} - replacements\n\n'.format(count))
         return
 
     # Standart format output information
@@ -99,66 +111,18 @@ def print_info_2(directory, file_name=None,
                          '{} - replacements\n'.format(count))
 
 
-def print_info(info, files, verbose, quiet):
-    """This function formats the output modes of information
-    """
-    # Enable option -q or --quiet
-    if quiet:
-        sys.exit(0)
-
-    count = 0
-    status = {
-        0: 'error',
-        1: 'omitted',
-        2: 'processed'
-    }
-    sys.stdout.write('List of changes:\n')
-
-    # Enable option -v or --verbose
-    if verbose:
-        tmp = files[0][0]
-        sys.stdout.write('{}\n'.format(tmp))
-        for file_ in files:
-            if tmp != file_[0]:
-                tmp = file_[0]
-                sys.stdout.write('\n{}\n'.format(tmp))
-
-            sys.stdout.write('\tIn file ->{}<- '.format(file_[1]) +
-                             'is entered {}'.format(file_[2]) +
-                             ' changes; ' +
-                             'status: {}\n'.format(status[file_[-1]]))
-            count += file_[2] if file_[2] > 0 else 0
-
-    # Standart format output information
-    if not verbose:
-        for file_ in files:
-            if file_[2] > 0:
-                sys.stdout.write('\tIn file ->{}<- '.format(file_[1]) +
-                                 'is entered {}'.format(file_[2]) +
-                                 ' changes\n')
-                count += file_[2]
-
-    sys.stdout.write('\nTotal find: ' +
-                     'directorys - {}, '.format(len(info['dirs'])) +
-                     'files - {}, '.format(info['files']) +
-                     'in {} files is entered '.format(info['replaces']) +
-                     '{} changes.\n'.format(count))
-    sys.exit(0)
-
-
 def parse_args():
     """Parse command line parameters passed to the module
     """
-    parser = argparse.ArgumentParser()
-
-    # Overriding
-    # parser.print_help = print_help
+    parser = ModuleParser()
 
     parser.add_argument('pattern', type=str, help='Source srting')
     parser.add_argument('replace', type=str, help='Replace string')
     parser.add_argument('-d', '--directory', type=str, default=os.getcwd(),
                         help='Directory traversal')
     parser.add_argument('-i', '--include-ext', type=str,
+                        help='Sets the suffix included in file name')
+    parser.add_argument('-t', '--type-file', type=str,
                         help='Sets the file type')
     parser.add_argument('-v', '--verbose', action='store_true',
                         help='Print details information')
@@ -176,28 +140,43 @@ def file_error(file_name, mode, print_):
     res = None
     try:
         res = open(file_name, mode)
-    except FileIOException as error:
+    except IOError as error:
         if print_:
             sys.stderr.write('scandir.py: {}\n'.format(error))
 
     return res
 
 
-def file_filter(file_name, filter_):
-    """Thia function filtres files on a specified type
+def type_filter(file_name, filter_):
+    """This function filtres files on a specified type
     """
     if not filter_:
         return True
 
     res = file_name.split('.')
-    '''
-    if not res[0] and secret:
-        return True
-    '''
+    ext = filter_.split(',')
 
-    if res[-1] == filter_:
+    if res[-1] in ext:
         return True
 
+    return False
+
+
+def suffix_filter(file_name, filter_):
+    """This function filtres files on a specified suffix
+    """
+    if not filter_:
+        return True
+
+    name = file_name.split('.')
+    if not name[0]:
+        name = name[1:]
+
+    ext = filter_.split(',')
+
+    for i in ext:
+        if name[0].endswith(i):
+            return True
     return False
 
 
@@ -216,54 +195,113 @@ def replace_str(directory, file_name, data):
     """
     full_file_name = os.path.join(directory, file_name)
     if data.verbose:
-        if directory != print_info_2.__dict__['current_directory']:
-            print_info_2(directory, include_ext=data.include_ext)
+        if directory != print_info.__dict__['current_directory']:
+            print_info(directory=directory, verbose=data.verbose)
 
     file_ = file_error(full_file_name, 'r', data.error)
     if file_ is None:
-        return FILE_ERROR, STATUS_ERROR
+        # Print information to processing
+        print_info(
+            file_name=full_file_name,
+            status=STATUS_ERROR,
+            verbose=data.verbose
+        )
+        # Print information to processed
+        print_info(
+            file_name=full_file_name,
+            verbose=data.verbose,
+            start=False
+        )
+        return FILE_ERROR
+
     buffer_ = file_.read()
     file_.close()
 
-    count = buffer_.count(data.pattern)
-    if not count:
-        return count, STATUS_OMITTED
+    count_ = buffer_.count(data.pattern)
+    if not count_:
+        # Print information to processing
+        print_info(
+            file_name=full_file_name,
+            status=STATUS_OMITTED,
+            verbose=data.verbose
+        )
+        # Print information to processed
+        print_info(
+            file_name=full_file_name,
+            count=count_,
+            verbose=data.verbose,
+            start=False
+        )
+        return count_
 
     file_ = file_error(full_file_name, 'w', data.error)
     if file_ is None:
-        return FILE_ERROR, STATUS_ERROR
+        # Print information to processing
+        print_info(
+            file_name=full_file_name,
+            status=STATUS_ERROR,
+            verbose=data.verbose
+        )
+        # Print information to processed
+        print_info(
+            file_name=full_file_name,
+            verbose=data.verbose,
+            start=False
+        )
+        return FILE_ERROR
+    # Print information to processing
+    print_info(
+        file_name=full_file_name,
+        status=STATUS_PROCESSED,
+        verbose=data.verbose
+    )
+    # Print information to processed
+    print_info(
+        file_name=full_file_name,
+        count=count_,
+        verbose=data.verbose,
+        start=False
+    )
     file_.write(buffer_.replace(data.pattern, data.replace))
     file_.close()
 
-    return count, STATUS_PROCESSED
+    return count_
 
 
 def main():
     """This main function
     """
     opt = parse_args()
-    sys.stdout.write('List of changes: \n')
-    print_info_2(opt._directory, opt.include_ext)
+
+    if not opt.quiet:
+        sys.stdout.write('List of changes: \n')
+        print_info(
+            directory=opt.directory,
+            verbose=opt.verbose
+        )
+
     info = {
         'dirs': set(),
         'files': 0,
-        'replaces': 0
     }
-    files = []
+    count = 0
 
-    print(opt)
+    # print(opt)
     for current, file_name in parse_dir(opt.directory):
         info['dirs'].add(current)
-        info['files'] += 1
-        if not file_filter(file_name, opt.include_ext):
+        if not type_filter(file_name, opt.type_file):
             continue
-        count, status = replace_str(current, file_name, opt)
-        files.append((current, file_name, count, status))
-        if count > 0:
-            info['replaces'] += 1
+        if not suffix_filter(file_name, opt.include_ext):
+            continue
+        info['files'] += 1
+        count = replace_str(current, file_name, opt)
     # print(info)
     # print(files)
-    print_info(info, files, opt.verbose, opt.quiet)
+    if not opt.quiet:
+        sys.stdout.write('Total processed: ' +
+                         'directorys - {}, '.format(len(info['dirs'])) +
+                         'files - {}, '.format(info['files']) +
+                         'changes - {}.\n'.format(count))
 
 
 if __name__ == '__main__':
