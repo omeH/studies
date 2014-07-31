@@ -59,6 +59,8 @@ STATUS_PROCESSED = 3
 
 FILE_ERROR = 0
 
+OPTIONS = None
+
 
 class ModuleBaseException(BaseException):
     """The base class for all exceptions in this module
@@ -168,11 +170,13 @@ def suffix_filter(file_name, filter_):
     if not filter_:
         return True
 
-    suffix = file_name.split('.')[-1]
+    suffix = file_name.split('.')
+    if len(suffix) == 1:
+        return False
 
     ext = filter_.split(',')
 
-    if suffix in ext:
+    if suffix[-1] in ext:
         return True
 
     return False
@@ -274,13 +278,13 @@ def replace_str(directory, file_name, data):
 def main():
     """This main function
     """
-    opt = parse_args()
+    OPTIONS = parse_args()
 
-    if not opt.quiet:
+    if not OPTIONS.quiet:
         sys.stdout.write('List of changes: \n')
         print_info(
-            directory=opt.directory,
-            verbose=opt.verbose
+            directory=OPTIONS.directory,
+            verbose=OPTIONS.verbose
         )
 
     info = {
@@ -291,19 +295,19 @@ def main():
     count = 0
 
     # print(opt)
-    for current, file_name in parse_dir(opt.directory):
+    for current, file_name in parse_dir(OPTIONS.directory):
         info['dirs'].add(current)
-        if not type_filter(file_name, opt.type_file):
+        if not type_filter(file_name, OPTIONS.type_file):
             continue
-        if not suffix_filter(file_name, opt.include_ext):
+        if not suffix_filter(file_name, OPTIONS.include_ext):
             continue
         info['files'] += 1
-        count = replace_str(current, file_name, opt)
+        count = replace_str(current, file_name, OPTIONS)
         if count:
             info['replaces'] += 1
     # print(info)
     # print(files)
-    if not opt.quiet:
+    if not OPTIONS.quiet:
         sys.stdout.write('Total processed: ' +
                          'directorys - {}, '.format(len(info['dirs'])) +
                          'files - {}, '.format(info['files']) +
