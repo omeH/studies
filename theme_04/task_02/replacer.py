@@ -1,22 +1,22 @@
 # -*- coding: utf-8 -*-
 """
-This module iterates through the raplacement of one line to another
-in all underluing directories.
+This module iterates through the replacement of one line to another
+in all underlying directories.
 
 Usage:
-    scandir.py  PATTERN REPLACE [-d DIRECTORY] [--directory=DIRECTORY]
+    replacer.py  PATTERN REPLACE [-d DIRECTORY] [--directory=DIRECTORY]
                 [-i TEMPLATE] [--include-ext=TEMPLATE] [-h] [--help]
                 [-e] [--hide-errors] [-v] [--verbose] [-q] [--quiet]
 
 Description:
-    If you specify derictory, the bypass is perfoemed for this derictory.
+    If you specify directory, the bypass is performed for this directory.
     In the absence of this parameter is performed to bypass the current
     directory.
-    Module mast be passed two mandatory parametrs: pattern - the string
-    to search for in the file; replace - the string which subsitutions
+    Module mast be passed two mandatory parameters: pattern - the string
+    to search for in the file; replace - the string which substitutions
     are made.
 
-Parametrs:
+Parameters:
     PATTERN
         Search string in the file.
 
@@ -25,12 +25,12 @@ Parametrs:
 
 Options:
     -d DIRECTORY, --directory=DIRECTORY
-        Parametr takes the initial directory.
+        Parameter takes the initial directory.
 
     -e, --hide-errors
         Disable errors output.
 
-    -i TEMPLATE, --include-ext=TAMPLATE
+    -i TEMPLATE, --include-ext=TEMPLATE
         Set the suffix included in the file.
         The list of values with ','.
 
@@ -38,13 +38,13 @@ Options:
         Print help on the module and exit.
 
     --help
-        Print detaile help on the module and exit.
+        Print detailed help on the module and exit.
 
     -v, --verbose
         Print detailed information about the implementation.
 
     -q, --quiet
-        Suppresses information about the implementaion.
+        Suppresses information about the implementation.
 
 """
 
@@ -102,7 +102,7 @@ def print_info(directory=None, file_name=None, count=0,
         1: 'error',
         2: 'omitted',
         3: 'processed',
-        4: 'filtred'
+        4: 'filtered'
     }
     # Enable option -i or --include-ext
     if OPTIONS.verbose and status:
@@ -113,7 +113,7 @@ def print_info(directory=None, file_name=None, count=0,
             return
 
         if start:
-            sys.stdout.write('\tProcesseing file - {}, '.format(file_name) +
+            sys.stdout.write('\tProcessing file - {}, '.format(file_name) +
                              'status: {}\n'.format(mode[status]))
             return
 
@@ -121,7 +121,7 @@ def print_info(directory=None, file_name=None, count=0,
                          '{} - replacements\n\n'.format(count))
         return
 
-    # Standart format output information
+    # Standard format output information
     if count > 0:
         sys.stdout.write('\tProcessed file - {}, '.format(file_name) +
                          '{} - replacements\n'.format(count))
@@ -134,7 +134,7 @@ def parse_args():
     """
     parser = ModuleParser(add_help=False)
 
-    parser.add_argument('pattern', type=str, help='Source srting')
+    parser.add_argument('pattern', type=str, help='Source string')
     parser.add_argument('replace', type=str, help='Replace string')
     parser.add_argument('-d', '--directory', type=str, default=os.getcwd(),
                         help='Directory traversal')
@@ -165,7 +165,7 @@ def file_error(file_name, mode):
 
 
 def suffix_filter(file_name):
-    """This function filtres files on a specified suffix
+    """This function filters files on a specified suffix
     """
     if not OPTIONS.include_ext:
         return True
@@ -193,7 +193,7 @@ def parse_dir():
 
 def replace_str(directory_, file_name):
     """This function searches the string source_line in the file and
-    change it to reolace_line.
+    change it to replace_line.
     """
     full_file_name = os.path.join(directory_, file_name)
 
@@ -284,7 +284,7 @@ def main():
 
     if not OPTIONS.quiet:
         sys.stdout.write('Total processed: ' +
-                         'directorys - {}, '.format(len(info['dirs'])) +
+                         'directories - {}, '.format(len(info['dirs'])) +
                          'files - {}, '.format(info['files']) +
                          'changes - {}.\n'.format(info['replaces']))
 
