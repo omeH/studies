@@ -53,20 +53,18 @@ import sys
 import argparse
 
 
+# Status of file
 STATUS_ERROR = 1
 STATUS_OMITTED = 2
 STATUS_PROCESSED = 3
 STATUS_FILTERED = 4
+FILE_ERROR = -1
 
-FILE_ERROR = 0
+# Status of directory
+STATUS_PRINT = 1
+STATUS_NOT_PRINT = 0
 
 OPTIONS = None
-
-
-class ModuleBaseException(BaseException):
-    """The base class for all exceptions in this module
-    """
-    pass
 
 
 class ModuleHelpAction(argparse._HelpAction):
@@ -89,6 +87,20 @@ class ModuleParser(argparse.ArgumentParser):
         sys.stdout.write(__doc__ + '\n')
 
 
+def print_info_directory(directory=None):
+    if OPTIONS.quiet:
+        print_info_directory.fist = True
+        return STATUS_NOT_PRINT
+
+    if OPTIONS.verbose:
+        print_info_directory.first = False
+        print_info_directory.current_directory = directory
+        sys.stdout.write('Processing directory - {}\n'.format(directory))
+        return STATUS_PRINT
+
+    print_info_directory.first = True
+
+
 def print_info(directory=None, file_name=None, count=0,
                status=None, start=True):
     """This function formats the output modes of information
@@ -99,10 +111,10 @@ def print_info(directory=None, file_name=None, count=0,
         return
 
     mode = {
-        1: 'error',
-        2: 'omitted',
-        3: 'processed',
-        4: 'filtered'
+        STATUS_ERROR: 'error',
+        STATUS_OMITTED: 'omitted',
+        STATUS_PROCESSED: 'processed',
+        STATUS_FILTERED: 'filtered'
     }
     # Enable option -i or --include-ext
     if OPTIONS.verbose and status:
@@ -137,7 +149,7 @@ def parse_args():
     parser.add_argument('pattern', type=str, help='Source string')
     parser.add_argument('replace', type=str, help='Replace string')
     parser.add_argument('-d', '--directory', type=str, default=os.getcwd(),
-                        help='Directory traversal')
+                        help='Target directory')
     parser.add_argument('-i', '--include-ext', type=str,
                         help='Sets the suffix included in file name')
     parser.add_argument('-v', '--verbose', action='store_true',
@@ -145,7 +157,7 @@ def parse_args():
     parser.add_argument('-q', '--quiet', action='store_true',
                         help='Suppress information')
     parser.add_argument('-e', '--hide-errors', action='store_false',
-                        help='Print error')
+                        help='Disable print error')
     parser.add_argument('-h', '--help', action=ModuleHelpAction)
 
     return parser.parse_args()
@@ -197,24 +209,21 @@ def replace_str(directory_, file_name):
     """
     full_file_name = os.path.join(directory_, file_name)
 
+    '''
     if OPTIONS.verbose:
-        if directory_ != print_info.__dict__['current_directory']:
-            print_info(directory=directory_, status=True)
+        if directory_ != print_info_directory.current_directory:
+            print_info_directory(directory_)'''
 
     # print information about the filtered file
     if not suffix_filter(file_name):
-        # Print information to processing
         print_info(file_name=full_file_name, status=STATUS_FILTERED)
-        # Print information to processed
         print_info(file_name=full_file_name, status=True, start=False)
         return FILE_ERROR
 
     # Print information about the error while reading the file
     file_ = file_error(full_file_name, 'r')
     if file_ is None:
-        # Print information to processing
         print_info(file_name=full_file_name, status=STATUS_ERROR)
-        # Print information to processed
         print_info(file_name=full_file_name, status=True, start=False)
         return FILE_ERROR
 
@@ -224,9 +233,7 @@ def replace_str(directory_, file_name):
     # Print information about the missing file
     count_ = buffer_.count(OPTIONS.pattern)
     if not count_:
-        # Print information to processing
         print_info(file_name=full_file_name, status=STATUS_OMITTED)
-        # Print information to processed
         print_info(file_name=full_file_name, count=count_,
                    status=True, start=False)
         return count_
@@ -234,16 +241,12 @@ def replace_str(directory_, file_name):
     # Print information about the error while writing the file
     file_ = file_error(full_file_name, 'w')
     if file_ is None:
-        # Print information to processing
         print_info(file_name=full_file_name, status=STATUS_ERROR)
-        # Print information to processed
         print_info(file_name=full_file_name, status=True, start=False)
         return FILE_ERROR
 
     # Print information about the processed file
-    # Print information to processing
     print_info(file_name=full_file_name, status=STATUS_PROCESSED)
-    # Print information to processed
     print_info(file_name=full_file_name, count=count_, status=True, start=False)
 
     file_.write(buffer_.replace(OPTIONS.pattern, OPTIONS.replace))
@@ -257,34 +260,35 @@ def main():
     """
     global OPTIONS
     OPTIONS = parse_args()
-    print_info()
+    print_info_directory()
 
     if not OPTIONS.quiet:
         sys.stdout.write('List of changes: \n')
         # print_info()
 
     info = {
-        'dirs': set(),
+        'dirs': 0,
         'files': 0,
         'replaces': 0
     }
     count = 0
 
     for current, file_name in parse_dir():
-        info['dirs'].add(current)
-        if print_info.first:
-            print_info(
-                directory=current,
-                status=True
-            )
+        # info['dirs'].add(current)
+        if print_info_directory.first == 1:
+            print_info_directory(current)
+            info['dirs'] += 1
+        if OPTIONS.verbose:
+            if current != print_info_directory.current_directory:
+                info['dirs'] += print_info_directory(current)
         info['files'] += 1
         count = replace_str(current, file_name)
-        if count:
+        if count > 0:
             info['replaces'] += count
 
     if not OPTIONS.quiet:
         sys.stdout.write('Total processed: ' +
-                         'directories - {}, '.format(len(info['dirs'])) +
+                         'directories - {}, '.format(info['dirs']) +
                          'files - {}, '.format(info['files']) +
                          'changes - {}.\n'.format(info['replaces']))
 
