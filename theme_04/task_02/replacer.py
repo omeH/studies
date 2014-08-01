@@ -34,8 +34,11 @@ Options:
         Set the suffix included in the file.
         The list of values with ','.
 
-    -h, --help
+    -h
         Print help on the module and exit.
+
+    --help
+        Print detaile help on the module and exit.
 
     -v, --verbose
         Print detailed information about the implementation.
@@ -66,14 +69,24 @@ class ModuleBaseException(BaseException):
     pass
 
 
-class ModuleParser(argparse.ArgumentParser):
-    """The class for overriding method print_help
+class ModuleHelpAction(argparse._HelpAction):
+    """The class for overriding method __call__
     """
-    def print_help(self, file_=None):
+    def __call__(self, parser, namespace, values, option_string=None):
+        if 'help' in option_string:
+            parser.print_help_detailed()
+            parser.exit()
+        parser.print_help()
+        parser.exit()
+
+
+class ModuleParser(argparse.ArgumentParser):
+    """The class add method print_help
+    """
+    def print_help_detailed(self):
         """Print help documentation
         """
         sys.stdout.write(__doc__ + '\n')
-        sys.exit(0)
 
 
 def print_info(directory=None, file_name=None, count=0,
@@ -119,7 +132,7 @@ def print_info(directory=None, file_name=None, count=0,
 def parse_args():
     """Parse command line parameters passed to the module
     """
-    parser = ModuleParser()
+    parser = ModuleParser(add_help=False)
 
     parser.add_argument('pattern', type=str, help='Source srting')
     parser.add_argument('replace', type=str, help='Replace string')
@@ -133,6 +146,7 @@ def parse_args():
                         help='Suppress information')
     parser.add_argument('-e', '--hide-errors', action='store_false',
                         help='Print error')
+    parser.add_argument('-h', '--help', action=ModuleHelpAction)
 
     return parser.parse_args()
 
