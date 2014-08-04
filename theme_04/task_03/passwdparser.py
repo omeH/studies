@@ -4,8 +4,8 @@ returns a list whose elements are dictionaries with keys.
 Examples:
     import passwdparser
 
-    lines = read_passwd()
-    res = parser_paswwd(lines)
+    lines = passwdparser.read_passwd()
+    res = passwdparser.parser_paswwd(lines)
 
 """
 import sys
