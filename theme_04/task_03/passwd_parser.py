@@ -76,14 +76,33 @@ def _parser_passwd(passwd_line):
     if len(line) != LEN_LINE:
         raise ParserException('invalid format string')
 
-    return dict(zip(LIST_KEYS, passwd_line.split(':')))
+    return dict(zip(LIST_KEYS, line))
+
+
+def _str_to_int(number):
+    """This function converts the number represented as a string in int.
+    If this is not possible, the value doesn't change.
+
+    >>> _str_to_int('0')
+    0
+    >>> _str_to_int('str')
+    'str'
+    >>> _str_to_int([])
+    []
+    """
+    res = number
+    try:
+        res = int(number)
+    except (ValueError, TypeError):
+        pass
+    return res
 
 
 def read_passwd(file_path=FILE_NAME):
     """ This function reads the contents of file '/etc/passwd' and
     returns a list whose elements are dictionaries.
 
-    >>> res = read_passwd('passwd')
+    >>> res = read_passwd('tests/passwd')
     >>> isinstance(res, list)
     True
     >>> res[0]['login'] == 'root'
@@ -96,7 +115,10 @@ def read_passwd(file_path=FILE_NAME):
     res = []
     with open(file_path, 'r') as file_:
         for line in file_:
-            res.append(_parser_passwd(line.strip()))
+            dict_ = _parser_passwd(line.strip())
+            dict_['user_id'] = _str_to_int(dict_['user_id'])
+            dict_['group_id'] = _str_to_int(dict_['group_id'])
+            res.append(dict_)
 
     return res
 
