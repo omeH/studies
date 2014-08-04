@@ -2,9 +2,9 @@
 returns a list whose elements are dictionaries with keys.
 
 Examples:
-    import passwdparser
+    import passwd_parser
 
-    res = passwdparser.read_passwd(file_path)
+    res = passwd_parser.read_passwd(file_path)
 
 """
 
@@ -12,15 +12,14 @@ FILE_NAME = '/etc/passwd'
 LIST_KEYS = [
     'login',
     'passwd',
-    'id_user',
-    'id_group',
+    'user_id',
+    'group_id',
     'comment',
     'home',
     'interpreter'
 ]
 
 LEN_LINE = 7
-FILE_ERROR = -1
 
 
 class BaseModuleException(Exception):
@@ -38,12 +37,21 @@ class ParserException(BaseModuleException):
 def _parser_passwd(passwd_line):
     """This function parses the contents of strings based on a
     delimiter ':' and returns a dictionaries with keys:
-        login, passwd, id_user, id_group, comment, home, interpreter
+        login, passwd, user_id, group_id, comment, home, interpreter
 
     >>> res = _parser_passwd('root:x:0:0:root:/root:/bin/bash')
     >>> res['comment'] == 'root', res['home'] == '/root'
     (True, True)
-    >>> res['id_group'] ==  '0', res['id_user'] == '0'
+    >>> res['group_id'] ==  '0', res['user_id'] == '0'
+    (True, True)
+    >>> res['interpreter'] == '/bin/bash', res['login'] == 'root'
+    (True, True)
+    >>> res['passwd'] == 'x'
+    True
+    >>> res = _parser_passwd(u'root:x:0:0:root:/root:/bin/bash')
+    >>> res['comment'] == 'root', res['home'] == '/root'
+    (True, True)
+    >>> res['group_id'] ==  '0', res['user_id'] == '0'
     (True, True)
     >>> res['interpreter'] == '/bin/bash', res['login'] == 'root'
     (True, True)
@@ -58,10 +66,13 @@ def _parser_passwd(passwd_line):
         ...
     ParserException: passwd_line must be str
     """
+    if isinstance(passwd_line, unicode):
+        passwd_line = passwd_line.encode()
+
     if not isinstance(passwd_line, str):
         raise ParserException('passwd_line must be str')
-    line = passwd_line.split(':')
 
+    line = passwd_line.split(':')
     if len(line) != LEN_LINE:
         raise ParserException('invalid format string')
 
@@ -70,10 +81,9 @@ def _parser_passwd(passwd_line):
 
 def read_passwd(file_path=FILE_NAME):
     """ This function reads the contents of file '/etc/passwd' and
-    returns a list whose elements are dictionaries. If can't open
-    the file, it returns -1.
+    returns a list whose elements are dictionaries.
 
-    >>> res = read_passwd()
+    >>> res = read_passwd('passwd')
     >>> isinstance(res, list)
     True
     >>> res[0]['login'] == 'root'
@@ -84,11 +94,9 @@ def read_passwd(file_path=FILE_NAME):
     IOError: [Errno 2] No such file or directory: 'file'
     """
     res = []
-    file_ = open(file_path, 'r')
-
-    for line in file_:
-        res.append(_parser_passwd(line.strip()))
-    file_.close()
+    with open(file_path, 'r') as file_:
+        for line in file_:
+            res.append(_parser_passwd(line.strip()))
 
     return res
 
