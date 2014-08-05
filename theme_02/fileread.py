@@ -36,14 +36,16 @@ def main():
     """
     signal.signal(signal.SIGINT, sigint_handler)
     const.setmode([sys.stdin, sys.stdout])
+
     if len(sys.argv) == 1:
         transfer(sys.stdin)
         sys.exit(0)
+
     if sys.argv[1] == '-h':
         print(__doc__)
         sys.exit(0)
+
     file_names = sys.argv[1:]
-    error = 0
     for file_name in file_names:
         try:
             file_ = open(file_name, 'rb')
@@ -52,10 +54,6 @@ def main():
             # sys.stdout.write(open(file_).read())
         except IOError as error:
             sys.stderr.write('fileread.py: {}\n'.format(error))
-    if error:
-        sys.exit(1)
-    else:
-        sys.exit(0)
 
 
 if __name__ == '__main__':

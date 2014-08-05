@@ -187,7 +187,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def file_error(file_name, mode):
+def open_file_error(file_name, mode):
     """This function intercepts exceptions to the function open
     """
     result = None
@@ -240,7 +240,7 @@ def replace_str(directory, file_name):
         return FILE_FILTERED
 
     # Print information about the error while reading the file
-    file_ = file_error(full_file_name, 'r')
+    file_ = open_file_error(full_file_name, 'r')
     if file_ is None:
         print_info_file(file_name=full_file_name, status=STATUS_ERROR)
         print_info_file(file_name=full_file_name, start=False)
@@ -250,14 +250,15 @@ def replace_str(directory, file_name):
     file_.close()
 
     # Print information about the missing file
-    count_ = buffer_.count(OPTIONS.pattern)
-    if not count_:
+    count = buffer_.count(OPTIONS.pattern)
+    if not count:
         print_info_file(file_name=full_file_name, status=STATUS_OMITTED)
-        print_info_file(file_name=full_file_name, count=count_, start=False)
-        return count_
+        print_info_file(file_name=full_file_name, count_replace=count,
+                        start=False)
+        return count
 
     # Print information about the error while writing the file
-    file_ = file_error(full_file_name, 'w')
+    file_ = open_file_error(full_file_name, 'w')
     if file_ is None:
         print_info_file(file_name=full_file_name, status=STATUS_ERROR)
         print_info_file(file_name=full_file_name, start=False)
@@ -265,12 +266,12 @@ def replace_str(directory, file_name):
 
     # Print information about the processed file
     print_info_file(file_name=full_file_name, status=STATUS_PROCESSED)
-    print_info_file(file_name=full_file_name, count=count_, start=False)
+    print_info_file(file_name=full_file_name, count_replace=count, start=False)
 
     file_.write(buffer_.replace(OPTIONS.pattern, OPTIONS.replace))
     file_.close()
 
-    return count_
+    return count
 
 
 def main():

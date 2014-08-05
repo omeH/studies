@@ -4,22 +4,22 @@ returns a list whose elements are dictionaries with keys.
 Examples:
     import passwd_parser
 
-    res = passwd_parser.read_passwd(file_path)
+    result = passwd_parser.read_passwd(file_path)
 
 """
 
-FILE_NAME = '/etc/passwd'
-LIST_KEYS = [
+DEFAULT_FILE_PATH = '/etc/passwd'
+PASSWD_FIELDS = [
     'name',
     'password',
-    'UID',
-    'GID',
-    'GECOS',
+    'uid',
+    'gid',
+    'gecos',
     'directory',
     'shell'
 ]
 
-LENGTH_LINE = 7
+AMOUNT_PASSWD_FIELDS = 7
 
 
 class BaseModuleException(Exception):
@@ -37,21 +37,21 @@ class ParserException(BaseModuleException):
 def _parser_passwd(passwd_line):
     """This function parses the contents of strings based on a
     delimiter ':' and returns a dictionaries with keys:
-        login, passwd, user_id, group_id, comment, home, interpreter
+        name, password, uid, gid, gecos, directory, shell
 
     >>> res = _parser_passwd('root:x:0:0:root:/root:/bin/bash')
-    >>> res['GECOS'] == 'root', res['directory'] == '/root'
+    >>> res['gecos'] == 'root', res['directory'] == '/root'
     (True, True)
-    >>> res['GID'] ==  '0', res['UID'] == '0'
+    >>> res['gid'] ==  '0', res['uid'] == '0'
     (True, True)
     >>> res['shell'] == '/bin/bash', res['name'] == 'root'
     (True, True)
     >>> res['password'] == 'x'
     True
     >>> res = _parser_passwd(u'root:x:0:0:root:/root:/bin/bash')
-    >>> res['GECOS'] == 'root', res['directory'] == '/root'
+    >>> res['gecos'] == 'root', res['directory'] == '/root'
     (True, True)
-    >>> res['GID'] ==  '0', res['UID'] == '0'
+    >>> res['gid'] ==  '0', res['uid'] == '0'
     (True, True)
     >>> res['shell'] == '/bin/bash', res['name'] == 'root'
     (True, True)
@@ -73,10 +73,10 @@ def _parser_passwd(passwd_line):
         raise ParserException('passwd_line must be str')
 
     fields = passwd_line.split(':')
-    if len(fields) != LENGTH_LINE:
+    if len(fields) != AMOUNT_PASSWD_FIELDS:
         raise ParserException('invalid format string')
 
-    return dict(zip(LIST_KEYS, fields))
+    return dict(zip(PASSWD_FIELDS, fields))
 
 
 def _str_to_int(number):
@@ -98,7 +98,7 @@ def _str_to_int(number):
     return result
 
 
-def read_passwd(file_path=FILE_NAME):
+def read_passwd(file_path=DEFAULT_FILE_PATH):
     """ This function reads the contents of file '/etc/passwd' and
     returns a list whose elements are dictionaries.
 
@@ -120,10 +120,10 @@ def read_passwd(file_path=FILE_NAME):
     with open(file_path, 'r') as passwd_file:
         for passwd_line in passwd_file:
             dict_passwd_line = _parser_passwd(passwd_line.strip())
-            dict_passwd_line['UID'] = _str_to_int(dict_passwd_line['UID'])
-            dict_passwd_line['GID'] = _str_to_int(dict_passwd_line['GID'])
-            if isinstance(dict_passwd_line['UID'], str) or \
-                    isinstance(dict_passwd_line['GID'], str):
+            dict_passwd_line['uid'] = _str_to_int(dict_passwd_line['uid'])
+            dict_passwd_line['gid'] = _str_to_int(dict_passwd_line['gid'])
+            if isinstance(dict_passwd_line['uid'], str) or \
+                    isinstance(dict_passwd_line['gid'], str):
                 raise ParserException('id conversion from str to int: fail')
             result.append(dict_passwd_line)
 
