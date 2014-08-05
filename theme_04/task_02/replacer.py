@@ -103,7 +103,7 @@ class ModuleHelpAction(argparse._HelpAction):
 
 
 class ModuleParser(argparse.ArgumentParser):
-    """The class add method print_help
+    """The class add method print_help_detailed
     """
     def print_help_detailed(self):
         """Print help documentation
@@ -137,7 +137,7 @@ def print_info_directory(directory=None):
     print_info_directory.current_directory = directory
 
 
-def print_info_file(file_name=None, count=0,
+def print_info_file(file_name=None, count_replace=0,
                     status=None, start=True):
     """This function formats the output modes of information about file
     """
@@ -154,13 +154,13 @@ def print_info_file(file_name=None, count=0,
             return
 
         sys.stdout.write('\tProcessed file - {}, '.format(file_name) +
-                         '{} - replacements\n\n'.format(count))
+                         '{} - replacements\n\n'.format(count_replace))
         return
 
     # Standard format output information
-    if count > 0:
+    if count_replace > 0:
         sys.stdout.write('\tProcessed file - {}, '.format(file_name) +
-                         '{} - replacements\n'.format(count))
+                         '{} - replacements\n'.format(count_replace))
         return
 
 
@@ -190,14 +190,14 @@ def parse_args():
 def file_error(file_name, mode):
     """This function intercepts exceptions to the function open
     """
-    res = None
+    result = None
     try:
-        res = open(file_name, mode)
+        result = open(file_name, mode)
     except IOError as error:
         if OPTIONS.hide_errors:
             sys.stderr.write('->>{}\n'.format(error))
 
-    return res
+    return result
 
 
 def suffix_filter(file_name):
@@ -210,9 +210,9 @@ def suffix_filter(file_name):
     if len(suffix) == 1:
         return False
 
-    ext = OPTIONS.include_ext.split(',')
+    include_ext = OPTIONS.include_ext.split(',')
 
-    if suffix[-1] in ext:
+    if suffix[-1] in include_ext:
         return True
 
     return False
@@ -222,16 +222,16 @@ def parse_dir():
     """This function returns the full name all files of the current
     and subdirectories.
     """
-    for current, dirs, files in os.walk(OPTIONS.directory):
+    for current_directory, directories, files in os.walk(OPTIONS.directory):
         for file_ in files:
-            yield current, file_
+            yield current_directory, file_
 
 
-def replace_str(directory_, file_name):
+def replace_str(directory, file_name):
     """This function searches the string source_line in the file and
     change it to replace_line.
     """
-    full_file_name = os.path.join(directory_, file_name)
+    full_file_name = os.path.join(directory, file_name)
 
     # print information about the filtered file
     if not suffix_filter(file_name):
@@ -291,17 +291,17 @@ def main():
 
     print_info_directory(OPTIONS.directory)
 
-    for current, file_name in parse_dir():
+    for current_directory, file_name in parse_dir():
 
-        if current != print_info_directory.current_directory:
-            print_info_directory(current)
-        count = replace_str(current, file_name)
+        if current_directory != print_info_directory.current_directory:
+            print_info_directory(current_directory)
+        count_replace = replace_str(current_directory, file_name)
 
         info['files'] += 1
-        info['directories'].add(current)
-        if count > 0:
-            info['replaces'] += count
-        elif count == -1:
+        info['directories'].add(current_directory)
+        if count_replace > 0:
+            info['replaces'] += count_replace
+        elif count_replace == -1:
             info['errors'] += 1
 
     print_info_total(info)

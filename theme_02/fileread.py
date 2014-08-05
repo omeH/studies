@@ -25,10 +25,10 @@ def transfer(file_):
     standard output.
     """
     while True:
-        line = file_.read(const.BUFFER_SIZE)
-        if not line:
+        block = file_.read(const.BUFFER_SIZE)
+        if not block:
             break
-        sys.stdout.write(line)
+        sys.stdout.write(block)
 
 
 def main():
@@ -44,9 +44,9 @@ def main():
         sys.exit(0)
     file_names = sys.argv[1:]
     error = 0
-    for name in file_names:
+    for file_name in file_names:
         try:
-            file_ = open(name, 'rb')
+            file_ = open(file_name, 'rb')
             transfer(file_)
             file_.close()
             # sys.stdout.write(open(file_).read())

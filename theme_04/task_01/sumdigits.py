@@ -6,7 +6,7 @@ Usage:
 Description:
     factorial.py receivers one or more values number. For each values of
     number is number! and calculated the sum of digits in the number
-    number! Value of nunber! is only natural numbers.
+    number! Value of number! is only natural numbers.
 
 Options:
     -h Print help on the module and exit.
@@ -45,12 +45,12 @@ def str_to_int(number):
     """This function converts the number represented as a string in int.
     If this is not possible, the value doesn't change.
     """
-    res = None
+    result = None
     try:
-        res = int(number)
+        result = int(number)
     except (ValueError, TypeError):
         pass
-    return res
+    return result
 
 
 def factorial(number):
@@ -63,11 +63,11 @@ def factorial(number):
         raise FactorialException('invalid literal for factorial(): ' +
                                  '\'{}\' negative int'.format(number))
 
-    res = 1
+    result = 1
     for i in range(1, number + 1):
-        res *= i
+        result *= i
 
-    return res
+    return result
 
 
 def sum_digits(number):
@@ -83,11 +83,11 @@ def sum_digits(number):
 def main():
     """The main function
     """
-    errorstr = 'factorial.py: missing operand specifiels the file.\n' + \
+    error_message = 'factorial.py: missing operand specifiers the file.\n' + \
         'Get more information on the command: factorial.py -h\n'
 
     if len(sys.argv) == 1:
-        sys.stderr.write(errorstr)
+        sys.stderr.write(error_message)
         sys.exit(1)
 
     if sys.argv[1] == '-h':

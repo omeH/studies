@@ -37,10 +37,10 @@ def main():
     """
     signal.signal(signal.SIGINT, sigint_handler)
     const.setmode([sys.stdin, sys.stdout])
-    errorstr = 'Filewrite.py: missing operand specifiels the file.\n' + \
-        'Get more informaition on the command: "filewrite.py -h\n'
+    error_message = 'Filewrite.py: missing operand specifiers the file.\n' + \
+        'Get more information on the command: "filewrite.py -h\n'
     if len(sys.argv) == 1:
-        sys.stderr.write(errorstr)
+        sys.stderr.write(error_message)
         sys.exit(1)
     if sys.argv[1] == '-h':
         print(__doc__)

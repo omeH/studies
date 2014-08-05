@@ -10,16 +10,16 @@ Examples:
 
 FILE_NAME = '/etc/passwd'
 LIST_KEYS = [
-    'login',
-    'passwd',
-    'user_id',
-    'group_id',
-    'comment',
-    'home',
-    'interpreter'
+    'name',
+    'password',
+    'UID',
+    'GID',
+    'GECOS',
+    'directory',
+    'shell'
 ]
 
-LEN_LINE = 7
+LENGTH_LINE = 7
 
 
 class BaseModuleException(Exception):
@@ -40,22 +40,22 @@ def _parser_passwd(passwd_line):
         login, passwd, user_id, group_id, comment, home, interpreter
 
     >>> res = _parser_passwd('root:x:0:0:root:/root:/bin/bash')
-    >>> res['comment'] == 'root', res['home'] == '/root'
+    >>> res['GECOS'] == 'root', res['directory'] == '/root'
     (True, True)
-    >>> res['group_id'] ==  '0', res['user_id'] == '0'
+    >>> res['GID'] ==  '0', res['UID'] == '0'
     (True, True)
-    >>> res['interpreter'] == '/bin/bash', res['login'] == 'root'
+    >>> res['shell'] == '/bin/bash', res['name'] == 'root'
     (True, True)
-    >>> res['passwd'] == 'x'
+    >>> res['password'] == 'x'
     True
     >>> res = _parser_passwd(u'root:x:0:0:root:/root:/bin/bash')
-    >>> res['comment'] == 'root', res['home'] == '/root'
+    >>> res['GECOS'] == 'root', res['directory'] == '/root'
     (True, True)
-    >>> res['group_id'] ==  '0', res['user_id'] == '0'
+    >>> res['GID'] ==  '0', res['UID'] == '0'
     (True, True)
-    >>> res['interpreter'] == '/bin/bash', res['login'] == 'root'
+    >>> res['shell'] == '/bin/bash', res['name'] == 'root'
     (True, True)
-    >>> res['passwd'] == 'x'
+    >>> res['password'] == 'x'
     True
     >>> _parser_passwd(-1)
     Traceback (most recent call last):
@@ -72,11 +72,11 @@ def _parser_passwd(passwd_line):
     if not isinstance(passwd_line, str):
         raise ParserException('passwd_line must be str')
 
-    line = passwd_line.split(':')
-    if len(line) != LEN_LINE:
+    fields = passwd_line.split(':')
+    if len(fields) != LENGTH_LINE:
         raise ParserException('invalid format string')
 
-    return dict(zip(LIST_KEYS, line))
+    return dict(zip(LIST_KEYS, fields))
 
 
 def _str_to_int(number):
@@ -90,22 +90,22 @@ def _str_to_int(number):
     >>> _str_to_int([])
     []
     """
-    res = number
+    result = number
     try:
-        res = int(number)
+        result = int(number)
     except (ValueError, TypeError):
         pass
-    return res
+    return result
 
 
 def read_passwd(file_path=FILE_NAME):
     """ This function reads the contents of file '/etc/passwd' and
     returns a list whose elements are dictionaries.
 
-    >>> res = read_passwd('tests/passwd')
-    >>> isinstance(res, list)
+    >>> result = read_passwd('tests/passwd')
+    >>> isinstance(result, list)
     True
-    >>> res[0]['login'] == 'root'
+    >>> result[0]['name'] == 'root'
     True
     >>> read_passwd('file')
     Traceback (most recent call last):
@@ -116,18 +116,18 @@ def read_passwd(file_path=FILE_NAME):
         ...
     ParserException: id conversion from str to int: fail
     """
-    res = []
-    with open(file_path, 'r') as file_:
-        for line in file_:
-            dict_ = _parser_passwd(line.strip())
-            dict_['user_id'] = _str_to_int(dict_['user_id'])
-            dict_['group_id'] = _str_to_int(dict_['group_id'])
-            if isinstance(dict_['user_id'], str) or \
-                    isinstance(dict_['group_id'], str):
+    result = []
+    with open(file_path, 'r') as passwd_file:
+        for passwd_line in passwd_file:
+            dict_passwd_line = _parser_passwd(passwd_line.strip())
+            dict_passwd_line['UID'] = _str_to_int(dict_passwd_line['UID'])
+            dict_passwd_line['GID'] = _str_to_int(dict_passwd_line['GID'])
+            if isinstance(dict_passwd_line['UID'], str) or \
+                    isinstance(dict_passwd_line['GID'], str):
                 raise ParserException('id conversion from str to int: fail')
-            res.append(dict_)
+            result.append(dict_passwd_line)
 
-    return res
+    return result
 
 
 if __name__ == '__main__':
