@@ -111,6 +111,10 @@ def read_passwd(file_path=FILE_NAME):
     Traceback (most recent call last):
         ...
     IOError: [Errno 2] No such file or directory: 'file'
+    >>> read_passwd('tests/passwderror')
+    Traceback (most recent call last):
+        ...
+    ParserException: id conversion from str to int: fail
     """
     res = []
     with open(file_path, 'r') as file_:
@@ -118,6 +122,9 @@ def read_passwd(file_path=FILE_NAME):
             dict_ = _parser_passwd(line.strip())
             dict_['user_id'] = _str_to_int(dict_['user_id'])
             dict_['group_id'] = _str_to_int(dict_['group_id'])
+            if isinstance(dict_['user_id'], str) or \
+                    isinstance(dict_['group_id'], str):
+                raise ParserException('id conversion from str to int: fail')
             res.append(dict_)
 
     return res
