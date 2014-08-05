@@ -1,6 +1,5 @@
 """Testing the module naturalnambers
 """
-# from sys import argv
 
 from naturalnumbers import multiples
 

@@ -1,13 +1,12 @@
-"""Find the sum of all the multiples of 3 or 5 below 1000.
+"""This module generates a number multiples of 3 or 5.
 """
 
 
-def multiples(count):
+def multiples(limit):
     """Generation of the multiples 3 or 5
     """
-    if count < 0:
+    if limit < 0:
         return
-    for i in range(1, count):
-        if i%3 == 0 or i%5 == 0:
-            yield i
-
+    for number in range(1, limit):
+        if number % 3 == 0 or number % 5 == 0:
+            yield number
