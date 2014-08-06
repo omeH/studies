@@ -2,7 +2,7 @@
 """
 
 
-def multiples(limit):
+def natural_numbers(limit):
     """Generation of the multiples 3 or 5
     """
     if limit < 0:
