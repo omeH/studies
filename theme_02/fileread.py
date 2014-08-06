@@ -20,7 +20,7 @@ def sigint_handler(error, stack):
     sys.exit(1)
 
 
-def transference_data(file_):
+def copy_file_to_stdout(file_):
     """This function reads data from a file blocks and writes them to
     standard output.
     """
@@ -38,7 +38,7 @@ def main():
     const.setmode([sys.stdin, sys.stdout])
 
     if len(sys.argv) == 1:
-        transference_data(sys.stdin)
+        copy_file_to_stdout(sys.stdin)
         sys.exit(0)
 
     if sys.argv[1] == '-h':
@@ -49,7 +49,7 @@ def main():
     for file_name in file_names:
         try:
             file_ = open(file_name, 'rb')
-            transference_data(file_)
+            copy_file_to_stdout(file_)
             file_.close()
             # sys.stdout.write(open(file_).read())
         except IOError as error:

@@ -1,12 +1,13 @@
-"""This module generates a number multiples of 3 or 5.
+"""This module generates a natural number multiples of the divisors.
 """
 
 
-def natural_numbers(limit):
-    """Generation of the multiples 3 or 5
+def generate_natural_divisibles(limit, *divisors):
+    """Generation a natural number multiples of the divisors.
+    Numbers are generated up to the limit.
     """
     if limit < 0:
         return
     for number in range(1, limit):
-        if number % 3 == 0 or number % 5 == 0:
+        if filter((lambda divider: number % divider == 0), divisors):
             yield number

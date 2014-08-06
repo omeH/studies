@@ -21,7 +21,7 @@ def sigint_handler(error, stack):
     sys.exit(1)
 
 
-def transference_data(file_):
+def copy_stdin_to_file(file_):
     """Thia function reads data from a standard input blocks and
     writes to file.
     """
@@ -47,7 +47,7 @@ def main():
         sys.exit(0)
     try:
         file_ = open(sys.argv[1], 'wb')
-        transference_data(file_)
+        copy_stdin_to_file(file_)
         file_.close()
     except IOError as error:
         sys.stderr.write('filewrite.py: {}\n'.format(error))

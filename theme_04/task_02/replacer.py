@@ -187,7 +187,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def open_file_error(file_name, mode):
+def safe_open_file(file_name, mode):
     """This function intercepts exceptions to the function open
     """
     result = None
@@ -240,7 +240,7 @@ def replace_str(directory, file_name):
         return FILE_FILTERED
 
     # Print information about the error while reading the file
-    file_ = open_file_error(full_file_name, 'r')
+    file_ = safe_open_file(full_file_name, 'r')
     if file_ is None:
         print_info_file(file_name=full_file_name, status=STATUS_ERROR)
         print_info_file(file_name=full_file_name, start=False)
@@ -258,7 +258,7 @@ def replace_str(directory, file_name):
         return count
 
     # Print information about the error while writing the file
-    file_ = open_file_error(full_file_name, 'w')
+    file_ = safe_open_file(full_file_name, 'w')
     if file_ is None:
         print_info_file(file_name=full_file_name, status=STATUS_ERROR)
         print_info_file(file_name=full_file_name, start=False)
