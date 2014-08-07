@@ -5,7 +5,7 @@ Usage:
     runtime_sorting.py LIMIT ITERATION
 
 Description:
-    The module take from one to several LIMIT values. The list of
+    The module take one or more LIMIT values. The list of
     values with ','.
 
 Parameters:
