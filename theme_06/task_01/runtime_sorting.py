@@ -2,7 +2,8 @@
 of arbitrary length by the bubble and the built-in sorted().
 
 Usage:
-    runtime_sorting.py LIMIT ITERATION
+    runtime_sorting.py LIMIT ITERATION [-o] [--output-format]
+                       [-h] [--help]
 
 Description:
     The module take one or more LIMIT values. The list of
@@ -55,7 +56,8 @@ class ModuleProfiler(object):
 
     def __exit__(self, type_, value, traceback):
         if self._value == 'table':
-            sys.stdout.write('{:<15.5f}|'.format(time.time() - self._start_time))
+            sys.stdout.write('{:<15.5f}|'.format(time.time() -
+                                                 self._start_time))
         elif self._value == 'csv':
             sys.stdout.write('{:.5f},'.format(time.time() - self._start_time))
 
