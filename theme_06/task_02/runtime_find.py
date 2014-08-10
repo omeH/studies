@@ -155,9 +155,10 @@ def find_binary(list_, value):
         if value == list_[middle]:
             return middle
         elif value < list_[middle]:
-            last = middle
+            last = middle - 1
         else:
             first = middle + 1
+    return None
 
 
 def find_index(list_, value):
