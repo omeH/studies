@@ -242,14 +242,13 @@ def runtime(func, list_, format_, run):
         func(list_)
 
 
-def dropping(number, list_):
+def dropping(number, list_, length):
     """The function dropping from the peak values (max and min).
     """
-    for line in list_:
-        for _ in range(number):
-            items = line[2:]
-            line.remove(max(items))
-            line.remove(min(items))
+    for index in range(len(list_)):
+        items = list_[index][2:]
+        items.sort()
+        list_[index] = list_[index][:2] + items[number: length-number]
 
 
 def average_value(list_):
@@ -302,7 +301,7 @@ def main():
     elif options.output_format == 'csv':
         print_line_csv(info)
 
-    dropping(options.drop, info)
+    dropping(options.drop, info, options.iteration)
 
     if options.statistics:
         print_average_values(options.output_format, info)
