@@ -179,6 +179,10 @@ def print_average_values(format_, info):
             sys.stdout.write(
                 '{:<15.5f}|\n'.format(average_value(info[index + 1][2:]))
             )
+            sys.stdout.write('|{:<9}|{:<9}|'.format('', info[index + 2][1]))
+            sys.stdout.write(
+                '{:<15.5f}|\n'.format(average_value(info[index + 2][2:]))
+            )
         print_separation_line_average()
     elif format_ == 'csv':
         print_cap_average(format_)
