@@ -9,6 +9,32 @@ VIOLATIONS = {
 }
 
 
+class Unit:
+
+    name = ''
+    composition = {}
+
+    def __init__(self, name, composition):
+        self.name = name
+        self.composition = composition
+
+    def __str__(self):
+        return 'Unit: {0}'.format(self.name)
+
+    def recruit(self, position, person):
+        if self.composition.has_key(person):
+            self.composition[position].append(person)
+        else:
+            self.composition[position] = [person]
+
+    def exclude(self, person):
+        if self.composition.has_key(person.position):
+            self.composition[person.position].remove(person)
+
+    def dismiss(self, person):
+        person.leave_job()
+
+
 class Person:
     """
     >>> person_1 = Person('Ivanov Ivan Ivanovich', age=20)
@@ -84,23 +110,23 @@ class Employee(Person):
         Person.__init__(self, name, **info)
 
     def __str__(self):
-        pass
+        return 'Employee: {0}'.format(self.name)
 
     def get_job(self, position, pay, unit):
         self.position = position
         self.pay = pay
         self.unit = unit
+        self.unit.recruit(self.position, self)
 
     def sign_contract(self, term):
-        self.start_work = str(datetime.date.today())
-        self.end_work = str(self.start_work +
-                            datetime.timedelta(days=term*YEAR))
+        self.start_work = datetime.date.today()
+        self.end_work = self.start_work + datetime.timedelta(days=term*YEAR)
 
     def leave_job(self):
         print('Employee {0}'.format(self.name) +
-              ' leaves {1}'.format(self.end_work - datetime.date.today()) +
+              ' leaves {0}'.format(self.end_work - datetime.date.today()) +
               ' days before the completion of the contract')
-        self.unit.composition.remove(self)
+        self.unit.exclude(self)
 
     def receive_award(self, percent):
         return self.pay * percent
