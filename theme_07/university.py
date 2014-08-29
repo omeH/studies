@@ -2,38 +2,22 @@ import datetime
 
 
 YEAR = 365
+
 VIOLATIONS = {
     '001': 'drinking alcohol',
     '002': 'smoked in the room',
     '003': 'absent from work'
 }
 
-# --------------
-# Message format
-# --------------
-# Person
-PERSON = 'Person: {0}'
-PERSON_GO = 'Person {0} goes to {1}'
-PERSON_RUN = 'Person {0} running to {1}'
-PERSON_CELEBRATE = 'Person {0} celebration the {1} with:'
-PERSON_TALK = 'A person {0} talk to a {1} about {2}'
-# Employee
-EMPLOYEE = 'Employee: {0}'
-EMPLOYEE_LEAVE = \
-    'Employee {0} leave {1} before the completion of the contract'
-# Unit
-UNIT = 'Unit: {0}'
-Unit_CELEBRATE = 'From the department {0} to celebrate the {1} present:'
-# Other
 TAB = '    '
 
 
-class Unit:
+class Unit(object):
     """
     >>> unit = Unit('rectorate', {})
     >>> print(unit)
     Unit: rectorate
-    >>> print(unit.composition)
+    >>> print(unit.consist)
     {}
     >>> emp_1 = Employee('Ivanov Ivan Ivanovich', age=25)
     >>> emp_1.get_job('secretary', 1000, unit)
@@ -44,7 +28,7 @@ class Unit:
     >>> emp_3 = Employee('Sidorov Ivan Ivanovich', age=45)
     >>> emp_3.get_job('rector', 5000, unit)
     >>> emp_3.sign_contract(1)
-    >>> print(unit.composition['rector'][0])
+    >>> print(unit.consist['rector'][0])
     Employee: Sidorov Ivan Ivanovich
     >>> unit.celebrate('new year')
     From the department rectorate to celebrate the new year present:
@@ -54,48 +38,56 @@ class Unit:
             Employee: Ivanov Ivan Ivanovich
             Employee: Semenov Semen Semenovich
     >>> emp_1.leave_job()
-    Employee Ivanov Ivan Ivanovich leave 365 days, 0:00:00 before the completion of the contract
+    Employee Ivanov Ivan Ivanovich leave 365 days before the completion of the contract
     >>> unit.dismiss(emp_2)
-    Employee Semenov Semen Semenovich leave 365 days, 0:00:00 before the completion of the contract
+    Employee Semenov Semen Semenovich leave 365 days before the completion of the contract
     >>> unit.celebrate('8 march')
     From the department rectorate to celebrate the 8 march present:
         rector:
             Employee: Sidorov Ivan Ivanovich
     """
 
-    name = ''
-    composition = {}
+    # --------------
+    # Message format
+    # --------------
+    UNIT = 'Unit: {0}'
+    Unit_CELEBRATE = 'From the department {0} to celebrate the {1} present:'
+    # --------------
 
-    def __init__(self, name, composition):
+    name = ''
+    consist = {}
+
+    def __init__(self, name, consist):
         self.name = name
-        self.composition = composition
+        self.consist = consist
 
     def __str__(self):
-        return UNIT.format(self.name)
+        return self. UNIT.format(self.name)
 
     def recruit(self, position, person):
-        if self.composition.has_key(position):
-            self.composition[position].append(person)
+        if self.consist.has_key(position):
+            self.consist[position].append(person)
         else:
-            self.composition[position] = [person]
+            self.consist[position] = [person]
 
     def exclude(self, person):
-        if self.composition.has_key(person.position):
-            self.composition[person.position].remove(person)
+        if self.consist.has_key(person.position):
+            self.consist[person.position].remove(person)
 
     def dismiss(self, person):
         person.leave_job()
 
     def celebrate(self, what):
-        print(Unit_CELEBRATE.format(self.name, what))
-        for position in self.composition:
-            if self.composition[position]:
-                print('{0}{1}:'.format(TAB, position))
-                for person in self.composition[position]:
-                    print('{0}{1}'.format(TAB * 2, person))
+        print(self.Unit_CELEBRATE.format(self.name, what))
+        for position, persons in self.consist.iteritems():
+            if not persons:
+                continue
+            print('{0}{1}:'.format(TAB, position))
+            for person in persons:
+                print('{0}{1}'.format(TAB * 2, person))
 
 
-class Person:
+class Person(object):
     """
     >>> person_1 = Person('Ivanov Ivan Ivanovich', age=20)
     >>> person_2 = Person('Semenov Semen Semenovich', age=20)
@@ -121,6 +113,16 @@ class Person:
     A person Ivanov Ivan Ivanovich talk to a Semenov Semen Semenovich about cars
     """
 
+    # --------------
+    # Message format
+    # --------------
+    PERSON = 'Person: {0}'
+    PERSON_GO = 'Person {0} goes to {1}'
+    PERSON_RUN = 'Person {0} running to {1}'
+    PERSON_CELEBRATE = 'Person {0} celebration the {1} with:'
+    PERSON_TALK = 'A person {0} talk to a {1} about {2}'
+    # --------------
+
     name_key = ['Surname', 'Name', 'Patronymic']
     name = 'Incognito'
     _name = {key: 'Incognito' for key in name_key}
@@ -136,16 +138,16 @@ class Person:
                 self.info[key] = info[key]
 
     def __str__(self):
-        return PERSON.format(self.name)
+        return self.PERSON.format(self.name)
 
     def go_to(self, to):
-        print(PERSON_GO.format(self.name, to))
+        print(self.PERSON_GO.format(self.name, to))
 
     def run_to(self, to):
-        print(PERSON_RUN.format(self.name, to))
+        print(self.PERSON_RUN.format(self.name, to))
 
     def celebrate(self, what, with_whom):
-        print(PERSON_CELEBRATE.format(self.name, what))
+        print(self.PERSON_CELEBRATE.format(self.name, what))
         for person in with_whom:
             print('{0}{1}'.format(TAB, person))
 
@@ -153,10 +155,19 @@ class Person:
         self.violations.append((view, str(datetime.date.today())))
 
     def talk(self, person, about):
-        print(PERSON_TALK.format(self.name, person.name, about))
+        print(self.PERSON_TALK.format(self.name, person.name, about))
 
 
 class Employee(Person):
+
+    # --------------
+    # Message format
+    # --------------
+    EMPLOYEE = 'Employee: {0}'
+    EMPLOYEE_LEAVE = \
+        'Employee {0} leave {1} days before the completion of the contract'
+    EMPLOYEE_VACATION = 'For a {0} vacation ends {1}'
+    # --------------
 
     position = None
     unit = None
@@ -165,34 +176,90 @@ class Employee(Person):
     end_work = None
 
     def __init__(self, name, **info):
+        """
+        >>> emp = Employee('Ivanov Ivan', age=20, email='mail@mail.com')
+        >>> emp.name, emp.info['age'], emp.info['email']
+        ('Ivanov Ivan', 20, 'mail@mail.com')
+        """
         Person.__init__(self, name, **info)
 
     def __str__(self):
-        return EMPLOYEE.format(self.name)
+        """
+        >>> emp = Employee('Ivanov Ivan')
+        >>> print(emp)
+        Employee: Ivanov Ivan
+        """
+        return self. EMPLOYEE.format(self.name)
 
     def get_job(self, position, pay, unit):
+        """
+        >>> unit = Unit('rectorate', {})
+        >>> emp = Employee('Ivanov Ivan')
+        >>> emp.get_job('secretary', 1000, unit)
+        """
         self.position = position
         self.pay = pay
         self.unit = unit
         self.unit.recruit(self.position, self)
 
-    def sign_contract(self, term):
+    def sign_contract(self, year=False, days=False):
+        """
+        >>> unit = Unit('rectorate', {})
+        >>> emp = Employee('Ivanov Ivan', age=20, email='mail@mail.com')
+        """
+        if year is False and days is False:
+            return
+        term = year.real * YEAR + days.real
         self.start_work = datetime.date.today()
-        self.end_work = self.start_work + datetime.timedelta(days=term*YEAR)
+        self.end_work = self.start_work + datetime.timedelta(days=term)
 
     def leave_job(self):
+        """
+        >>> unit = Unit('rectorate', {})
+        >>> emp = Employee('Ivanov Ivan', age=20, email='mail@mail.com')
+        >>> emp.get_job('secretary', 1000, unit)
+        >>> emp.sign_contract(1)
+        >>> emp.unit == unit, unit.consist['secretary'][0] == emp
+        (True, True)
+        >>> emp.leave_job()
+        Employee Ivanov Ivan leave 365 days before the completion of the contract
+        >>> emp.unit == None, unit.consist['secretary'] == []
+        (True, True)
+        """
         if self.unit is None:
             return
-        print(EMPLOYEE_LEAVE.format(self.name,
-                                    self.end_work - datetime.date.today()))
+        days_left = self.end_work - datetime.date.today()
+        print(self.EMPLOYEE_LEAVE.format(self.name, days_left.days))
         self.unit.exclude(self)
         self.unit = None
 
     def receive_award(self, percent):
-        return self.pay * percent
+        """
+        >>> emp = Employee('Ivanov Ivan')
+        >>> emp.pay = 1000
+        >>> emp.receive_award(.2)
+        200
+        """
+        return int(self.pay * percent)
 
     def receive_increment(self, percent):
-        self.pay *= percent
+        """
+        >>> emp = Employee('Ivanov Ivan')
+        >>> emp.pay = 1000
+        >>> emp.receive_increment(.2)
+        >>> emp.pay
+        1200
+        """
+        self.pay += int(self. pay * percent)
+
+    def go_vacation(self, term):
+        """
+        >>> emp = Employee('Ivanov Ivan')
+        """
+        return self.EMPLOYEE_VACATION.format(
+            self.name,
+            datetime.date.today() + datetime.timedelta(days=term)
+        )
 
 
 if __name__ == '__main__':
