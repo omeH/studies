@@ -8,8 +8,60 @@ VIOLATIONS = {
     '003': 'absent from work'
 }
 
+# --------------
+# Message format
+# --------------
+# Person
+PERSON = 'Person: {0}'
+PERSON_GO = 'Person {0} goes to {1}'
+PERSON_RUN = 'Person {0} running to {1}'
+PERSON_CELEBRATE = 'Person {0} celebration the {1} with:'
+PERSON_TALK = 'A person {0} talk to a {1} about {2}'
+# Employee
+EMPLOYEE = 'Employee: {0}'
+EMPLOYEE_LEAVE = \
+    'Employee {0} leave {1} before the completion of the contract'
+# Unit
+UNIT = 'Unit: {0}'
+Unit_CELEBRATE = 'From the department {0} to celebrate the {1} present:'
+# Other
+TAB = '    '
+
 
 class Unit:
+    """
+    >>> unit = Unit('rectorate', {})
+    >>> print(unit)
+    Unit: rectorate
+    >>> print(unit.composition)
+    {}
+    >>> emp_1 = Employee('Ivanov Ivan Ivanovich', age=25)
+    >>> emp_1.get_job('secretary', 1000, unit)
+    >>> emp_1.sign_contract(1)
+    >>> emp_2 = Employee('Semenov Semen Semenovich', age=20)
+    >>> emp_2.get_job('secretary', 1000, unit)
+    >>> emp_2.sign_contract(1)
+    >>> emp_3 = Employee('Sidorov Ivan Ivanovich', age=45)
+    >>> emp_3.get_job('rector', 5000, unit)
+    >>> emp_3.sign_contract(1)
+    >>> print(unit.composition['rector'][0])
+    Employee: Sidorov Ivan Ivanovich
+    >>> unit.celebrate('new year')
+    From the department rectorate to celebrate the new year present:
+        rector:
+            Employee: Sidorov Ivan Ivanovich
+        secretary:
+            Employee: Ivanov Ivan Ivanovich
+            Employee: Semenov Semen Semenovich
+    >>> emp_1.leave_job()
+    Employee Ivanov Ivan Ivanovich leave 365 days, 0:00:00 before the completion of the contract
+    >>> unit.dismiss(emp_2)
+    Employee Semenov Semen Semenovich leave 365 days, 0:00:00 before the completion of the contract
+    >>> unit.celebrate('8 march')
+    From the department rectorate to celebrate the 8 march present:
+        rector:
+            Employee: Sidorov Ivan Ivanovich
+    """
 
     name = ''
     composition = {}
@@ -19,10 +71,10 @@ class Unit:
         self.composition = composition
 
     def __str__(self):
-        return 'Unit: {0}'.format(self.name)
+        return UNIT.format(self.name)
 
     def recruit(self, position, person):
-        if self.composition.has_key(person):
+        if self.composition.has_key(position):
             self.composition[position].append(person)
         else:
             self.composition[position] = [person]
@@ -33,6 +85,14 @@ class Unit:
 
     def dismiss(self, person):
         person.leave_job()
+
+    def celebrate(self, what):
+        print(Unit_CELEBRATE.format(self.name, what))
+        for position in self.composition:
+            if self.composition[position]:
+                print('{0}{1}:'.format(TAB, position))
+                for person in self.composition[position]:
+                    print('{0}{1}'.format(TAB * 2, person))
 
 
 class Person:
@@ -76,26 +136,24 @@ class Person:
                 self.info[key] = info[key]
 
     def __str__(self):
-        return 'Person: {0}'.format(self.name)
+        return PERSON.format(self.name)
 
     def go_to(self, to):
-        print('Person {0} goes to {1}'.format(self.name, to))
+        print(PERSON_GO.format(self.name, to))
 
     def run_to(self, to):
-        print('Person {0} running to {1}'.format(self.name, to))
+        print(PERSON_RUN.format(self.name, to))
 
     def celebrate(self, what, with_whom):
-        print('Person {0} celebration the {1} with:'.format(self.name, what))
+        print(PERSON_CELEBRATE.format(self.name, what))
         for person in with_whom:
-            print('    {0}'.format(person))
+            print('{0}{1}'.format(TAB, person))
 
     def commit_violation(self, view):
         self.violations.append((view, str(datetime.date.today())))
 
     def talk(self, person, about):
-        print('A person {0}'.format(self.name) +
-              ' talk to a {0}'.format(person.name) +
-              ' about {0}'.format(about))
+        print(PERSON_TALK.format(self.name, person.name, about))
 
 
 class Employee(Person):
@@ -110,7 +168,7 @@ class Employee(Person):
         Person.__init__(self, name, **info)
 
     def __str__(self):
-        return 'Employee: {0}'.format(self.name)
+        return EMPLOYEE.format(self.name)
 
     def get_job(self, position, pay, unit):
         self.position = position
@@ -123,10 +181,12 @@ class Employee(Person):
         self.end_work = self.start_work + datetime.timedelta(days=term*YEAR)
 
     def leave_job(self):
-        print('Employee {0}'.format(self.name) +
-              ' leaves {0}'.format(self.end_work - datetime.date.today()) +
-              ' days before the completion of the contract')
+        if self.unit is None:
+            return
+        print(EMPLOYEE_LEAVE.format(self.name,
+                                    self.end_work - datetime.date.today()))
         self.unit.exclude(self)
+        self.unit = None
 
     def receive_award(self, percent):
         return self.pay * percent
