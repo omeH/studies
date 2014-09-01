@@ -52,9 +52,11 @@ class Unit(object):
             Employee: Ivanov Ivan Ivanovich
             Employee: Semenov Semen Semenovich
     >>> emp_1.leave_job()
-    Employee Ivanov Ivan Ivanovich leave 365 days before the completion of the contract
+    Employee Ivanov Ivan Ivanovich leave 365 days before the completion of \
+the contract
     >>> unit.dismiss(emp_2)
-    Employee Semenov Semen Semenovich leave 365 days before the completion of the contract
+    Employee Semenov Semen Semenovich leave 365 days before the completion \
+of the contract
     >>> unit.celebrate('8 march')
     From the department rectorate to celebrate the 8 march present:
         rector:
@@ -66,6 +68,9 @@ class Unit(object):
     # --------------
     UNIT = 'Unit: {0}'
     UNIT_CELEBRATE = 'From the department {0} to celebrate the {1} present:'
+    UNIT_MONITOR = \
+        '{0} {1} was assigned to monitor the execution of the order on {2}'
+    UNIT_NO_MONITOR = '{0} {1} is not an employee unit {2}'
     # --------------
 
     name = None
@@ -95,6 +100,15 @@ class Unit(object):
         person.leave_job()
 
     def refuse(self, person):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> emp_1 = Employee('Ivanov Ivan', age=25)
+        >>> f_fzo.refuse(emp_1)
+        False
+        >>> emp_2 = Employee('Semenov Semen', age=17)
+        >>> f_fzo.refuse(emp_2)
+        True
+        """
         if person.info.has_key('age'):
             return False if person.info['age'] >= \
                 self.restrictions['age'] else True
@@ -107,6 +121,24 @@ class Unit(object):
             print('{0}{1}:'.format(TAB, position))
             for person in persons:
                 print('{0}{1}'.format(TAB * 2, person))
+
+    def monitor_execution_of_order(self, order, person):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> emp = Employee('Ivanov Ivan', age=25)
+        >>> emp.get_job('secretary', 1000, f_fzo)
+        True
+        >>> order = 'banning smoking in university'
+        >>> f_fzo.monitor_execution_of_order(order, emp)
+        Employee Ivanov Ivan was assigned to monitor the execution of the \
+order on banning smoking in university
+        """
+        if self.consist.has_key(person.position):
+            print(self.UNIT_MONITOR.format(person.__class__.__name__,
+                                           person.name, order))
+        else:
+            print(self.UNIT_NO_MONITOR.format(person.__class__.__name__,
+                                              person.name, self.name))
 
 
 class Rectorate(Unit):
@@ -200,7 +232,8 @@ class Person(object):
     >>> person_1.violations[0][0]
     'smoked in the room'
     >>> person_1.talk(person_2, 'cars')
-    A person Ivanov Ivan Ivanovich talk to a Semenov Semen Semenovich about cars
+    A person Ivanov Ivan Ivanovich talk to a Semenov Semen Semenovich \
+about cars
     """
 
     # --------------
@@ -328,7 +361,8 @@ class Employee(Person):
         >>> emp.unit == unit, unit.consist['secretary'][0] == emp
         (True, True)
         >>> emp.leave_job()
-        Employee Ivanov Ivan leave 365 days before the completion of the contract
+        Employee Ivanov Ivan leave 365 days before the completion of the \
+contract
         >>> emp.unit == None, unit.consist['secretary'] == []
         (True, True)
         """
@@ -395,7 +429,7 @@ class Rector(Employee):
     # Message format
     # --------------
     RECTOR = 'Rector: {0}'
-    RECTOR_TO_ORDER = 'Rector {0} ordered the {1} {2} on the {3}'
+    RECTOR_TO_ORDER = 'Rector {0} ordered the {1} on the {2}'
     RECTOR_ISSUE_ORDER = 'Rector {0} issued an order {1}'
     RECTOR_SIGN_ORDER = 'Rector {0} signed an order {1} of {2}'
     RECTOR_REPORT = 'Rector {0} reported to the Ministry of the {1}'
@@ -420,16 +454,15 @@ class Rector(Employee):
         """
         return self.RECTOR.format(self.name)
 
-    def to_order(self, order, person):
+    def to_order(self, order, unit):
         """
-        >>> unit = Unit('rectorate', {})
+        >>> unit = Rectorate('rectorate', {})
         >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
-        >>> emp = Employee('Semenov Semen')
-        >>> rector.to_order('preparation of reports', emp)
-        Rector Ivanov Ivan ordered the Employee Semenov Semen on the preparation of reports
+        >>> rector.to_order('preparation of reports', unit)
+        Rector Ivanov Ivan ordered the Rectorate on the preparation of reports
         """
-        print(self.RECTOR_TO_ORDER.format(self.name, person.__class__.__name__,
-                                          person.name, order))
+        print(self.RECTOR_TO_ORDER.format(self.name, unit.__class__.__name__,
+                                          order))
 
     def issue_order(self, about):
         """
@@ -480,7 +513,8 @@ class Rector(Employee):
         >>> unit = Unit('rectorate', {})
         >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
         >>> rector._report_for_ministry('execution of the order #01')
-        Rector Ivanov Ivan reported to the Ministry of the execution of the order #01
+        Rector Ivanov Ivan reported to the Ministry of the execution of the \
+order #01
         """
         print(self.RECTOR_REPORT.format(self.name, cause))
 
