@@ -22,46 +22,6 @@ def timedelta(term):
 
 
 class Unit(object):
-    """
-    >>> unit = Unit('rectorate', {})
-    >>> print(unit)
-    Unit: rectorate
-    >>> print(unit.consist)
-    {}
-    >>> emp_1 = Employee('Ivanov Ivan Ivanovich', age=25)
-    >>> emp_1.get_job('secretary', 1000, unit)
-    True
-    >>> emp_1.sign_contract(1)
-    >>> emp_2 = Employee('Semenov Semen Semenovich', age=20)
-    >>> emp_2.get_job('secretary', 1000, unit)
-    True
-    >>> unit.refuse(emp_2)
-    False
-    >>> emp_2.sign_contract(1)
-    >>> emp_3 = Employee('Sidorov Ivan Ivanovich', age=45)
-    >>> emp_3.get_job('rector', 5000, unit)
-    True
-    >>> emp_3.sign_contract(1)
-    >>> print(unit.consist['rector'][0])
-    Employee: Sidorov Ivan Ivanovich
-    >>> unit.celebrate('new year')
-    From the department rectorate to celebrate the new year present:
-        rector:
-            Employee: Sidorov Ivan Ivanovich
-        secretary:
-            Employee: Ivanov Ivan Ivanovich
-            Employee: Semenov Semen Semenovich
-    >>> emp_1.leave_job()
-    Employee Ivanov Ivan Ivanovich leave 365 days before the completion of \
-the contract
-    >>> unit.dismiss(emp_2)
-    Employee Semenov Semen Semenovich leave 365 days before the completion \
-of the contract
-    >>> unit.celebrate('8 march')
-    From the department rectorate to celebrate the 8 march present:
-        rector:
-            Employee: Sidorov Ivan Ivanovich
-    """
 
     # --------------
     # Message format
@@ -74,29 +34,106 @@ of the contract
     # --------------
 
     name = None
-    restrictions = {'age': 18}
 
     def __init__(self, name, consist):
+        """
+        >>> unit = Unit('FZO', {})
+        >>> unit.name, unit.consist
+        ('FZO', {})
+        """
+        self.restrictions = {}
         self.name = name
         self.consist = consist
+        self.restrictions['age'] = 17
+        self.restrictions['Rector'] = None
+        self.restrictions['Dean'] = None
 
     def __str__(self):
+        """
+        >>> unit = Unit('FZO', {})
+        >>> print(unit)
+        Unit: FZO
+        """
         return self. UNIT.format(self.name)
 
     def recruit(self, position, person):
+        """
+        >>> unit_1 = Unit('FZO', {})
+        >>> emp = Employee('Ivanov Ivan', age=20)
+        >>> unit_1.recruit('teacher', emp)
+        True
+        >>> unit_1.consist['teacher'][0].name
+        'Ivanov Ivan'
+        >>> rector = Rector('Ivanov Ivan', 5000, unit_1, age=50)
+        >>> unit_2 = Unit('FZO', {})
+        >>> dean = Dean('Semenov Semen', 4500, unit_2, age=45)
+        >>> unit_1.consist['rector'][0].name
+        'Ivanov Ivan'
+        >>> unit_2.consist['dean'][0].name
+        'Semenov Semen'
+        >>> isinstance(unit_1.restrictions['Rector'], Rector)
+        True
+        >>> isinstance(unit_2.restrictions['Dean'], Dean)
+        True
+        """
         if self.refuse(person):
             return False
         if self.consist.has_key(position):
             self.consist[position].append(person)
         else:
+            if person.__class__ is Rector:
+                self.restrictions['Rector'] = person
+            if person.__class__ is Dean:
+                self.restrictions['Dean'] = person
             self.consist[position] = [person]
         return True
 
     def exclude(self, person):
+        """
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector_1 = Rector('Ivanov Ivan', 5000, rectorate, age=50)
+        >>> rector_2 = Rector('Semenov Semen', 4500, rectorate, age=45)
+        >>> rectorate.consist['rector'][0].name
+        'Ivanov Ivan'
+        >>> rectorate.exclude(rector_2)
+        >>> rectorate.consist['rector'][0].name
+        'Ivanov Ivan'
+        >>> rectorate.exclude(rector_1)
+        >>> rectorate.consist['rector']
+        []
+        >>> f_fzo = Faculty('FZO', {})
+        >>> dean_1 = Dean('Ivanov Ivan', 5000, f_fzo, age=50)
+        >>> dean_2 = Dean('Semenov Semen', 4500, f_fzo, age=45)
+        >>> f_fzo.consist['dean'][0].name
+        'Ivanov Ivan'
+        >>> f_fzo.exclude(dean_2)
+        >>> f_fzo.consist['dean'][0].name
+        'Ivanov Ivan'
+        >>> f_fzo.exclude(dean_1)
+        >>> f_fzo.consist['dean']
+        []
+        """
         if self.consist.has_key(person.position):
             self.consist[person.position].remove(person)
+            if isinstance(person, Rector):
+                self.restrictions['Rector'] = None
+            if isinstance(person, Dean):
+                self.restrictions['Dean'] = None
 
     def dismiss(self, person):
+        """
+        >>> unit = Unit('FZO', {})
+        >>> emp = Employee('Ivanov Ivan', age=20)
+        >>> emp.get_job('Teacher', 1000, unit)
+        True
+        >>> emp.sign_contract(days=1)
+        >>> isinstance(unit.consist['Teacher'][0], Employee)
+        True
+        >>> unit.dismiss(emp)
+        Employee Ivanov Ivan leave 1 days before the completion of the contract
+        >>> unit.consist
+        {'Teacher': []}
+        """
         person.leave_job()
 
     def refuse(self, person):
@@ -105,15 +142,47 @@ of the contract
         >>> emp_1 = Employee('Ivanov Ivan', age=25)
         >>> f_fzo.refuse(emp_1)
         False
-        >>> emp_2 = Employee('Semenov Semen', age=17)
+        >>> emp_2 = Employee('Semenov Semen', age=16)
         >>> f_fzo.refuse(emp_2)
         True
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector_1 = Rector('Ivanov Ivan', 5000, rectorate, age=50)
+        >>> rector_2 = Rector('Semenov Semen', 4500, rectorate, age=45)
+        >>> rectorate.refuse(rector_2)
+        True
+        >>> f_fzo = Faculty('FZO', {})
+        >>> dean_1 = Dean('Ivanov Ivan', 5000, f_fzo, age=50)
+        >>> dean_2 = Dean('Semenov Semen', 4500, f_fzo, age=45)
+        >>> f_fzo.refuse(dean_2)
+        True
         """
+        check = []
         if person.info.has_key('age'):
-            return False if person.info['age'] >= \
-                self.restrictions['age'] else True
+             check.append(False if person.info['age'] >= \
+                          self.restrictions['age'] else True)
+
+        if self.restrictions['Rector']:
+            check.append(True)
+
+        if self.restrictions['Dean']:
+            check.append(True)
+
+        return True if True in check else False
 
     def celebrate(self, what):
+        """
+        >>> unit = Unit('FZO', {})
+        >>> emp = Employee('Ivanov Ivan', age=25)
+        >>> emp.get_job('teacher', 1000, unit)
+        True
+        >>> dean = Dean('Semenov Semen', 5000, unit, age=25)
+        >>> unit.celebrate('new year')
+        From the department FZO to celebrate the new year present:
+            dean:
+                Dean: Semenov Semen
+            teacher:
+                Employee: Ivanov Ivan
+        """
         print(self.UNIT_CELEBRATE.format(self.name, what))
         for position, persons in self.consist.iteritems():
             if not persons:
@@ -143,6 +212,12 @@ order on banning smoking in university
 
 class Rectorate(Unit):
 
+    # --------------
+    # Message format
+    # --------------
+    RECTORATE = 'Rectorate: {0}'
+    # --------------
+
     def __init__(self, structure, consist):
         """
         >>> f_fzo = Faculty('FZO', {})
@@ -157,6 +232,14 @@ class Rectorate(Unit):
         """
         Unit.__init__(self, 'Rectorate', consist)
         self.structure = structure
+
+    def __str__(self):
+        """
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> print(rectorate)
+        Rectorate: Rectorate
+        """
+        return self.RECTORATE.format(self.name)
 
     def add_unit(self, unit):
         """
@@ -192,6 +275,10 @@ class Rectorate(Unit):
         >>> rectorate.del_unit(f_fkp)
         >>> len(rectorate.structure['Faculty'])
         1
+        >>> rectorate.del_unit(f_fkp)
+        Traceback (most recent call last):
+            ...
+        ValueError: list.remove(x): x not in list
         >>> d_evm = Department('EVM', {})
         >>> rectorate.del_unit(d_evm)
         """
@@ -200,11 +287,113 @@ class Rectorate(Unit):
 
 
 class Faculty(Unit):
+
+    # --------------
+    # Message format
+    # --------------
+    FACULTY = 'Faculty: {0}'
+    FACULTY_ORDER = 'Order No.{0} on the expulsion of students:'
+    # --------------
+
+    departments = None
+    groups = None
+    training_plag = None
+
+    def __init__(self, name, consist):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> f_fzo.name, f_fzo.consist, f_fzo.departments, f_fzo.groups
+        ('FZO', {}, [], [])
+        """
+        Unit.__init__(self, name, consist)
+        self.departments = []
+        self.groups = []
+        self.training_plan = {}
+
+    def __str__(self):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> print(f_fzo)
+        Faculty: FZO
+        """
+        return self.FACULTY.format(self.name)
+
+    def add_unit(self, unit):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> d_evm = Department('EVM', {})
+        >>> g_900502 = Group('900502', {})
+        >>> f_fzo.add_unit(d_evm)
+        >>> f_fzo.add_unit(g_900502)
+        >>> len(f_fzo.departments), len(f_fzo.groups)
+        (1, 1)
+        """
+        if isinstance(unit, Department):
+            self.departments.append(unit)
+        elif isinstance(unit, Group):
+            self.groups.append(unit)
+
+    def del_unit(self, unit):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> d_evm = Department('EVM', {})
+        >>> g_900502 = Group('900502', {})
+        >>> f_fzo.add_unit(d_evm)
+        >>> f_fzo.add_unit(g_900502)
+        >>> len(f_fzo.departments), len(f_fzo.groups)
+        (1, 1)
+        >>> f_fzo.del_unit(d_evm)
+        >>> f_fzo.del_unit(g_900502)
+        >>> f_fzo.departments, f_fzo.groups
+        ([], [])
+        >>> f_fzo.del_unit(g_900502)
+        Traceback (most recent call last):
+            ...
+        ValueError: list.remove(x): x not in list
+        """
+        if isinstance(unit, Department):
+            self.departments.remove(unit)
+        elif isinstance(unit, Group):
+            self.groups.remove(unit)
+
+    def order_for_expulsion(self, act, students):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> st_1 = Student('Ivanov Ivan', age=19)
+        >>> st_2 = Student('Semenov Semen', age=20)
+        >>> order = f_fzo.order_for_expulsion('12', [st_1, st_2])
+        >>> print(order)
+        Order No.12 on the expulsion of students:
+            Student: Ivanov Ivan
+            Student: Semenov Semen
+        """
+        order = self.FACULTY_ORDER.format(act)
+        for student in students:
+            order = ''.join([order, '\n', TAB, str(student)])
+        return order
+
+
+    def develop_training_plan(self, lesson, data):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> theme_1 = 'Familiarity with the language Python'
+        >>> theme_2 = 'Data types Python language'
+        >>> f_fzo.develop_training_plan('OPIP', [theme_1, theme_2])
+        >>> f_fzo.training_plan['OPIP'] == ([theme_1, theme_2], 2)
+        True
+        """
+        self.training_plan[lesson] = (data, len(data))
+
+
+
+class Department(Unit):
+
     def __init__(self, name, consist):
         Unit.__init__(self, name, consist)
 
 
-class Department(Unit):
+class Group(Unit):
+
     def __init__(self, name, consist):
         Unit.__init__(self, name, consist)
 
@@ -437,18 +626,18 @@ class Rector(Employee):
 
     def __init__(self, name, pay, unit, **info):
         """
-        >>> unit = Unit('rectorate', {})
-        >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
-        >>> rector.name, rector.info['age']
-        ('Ivanov Ivan', 40)
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
+        >>> rector.name, rector.info['age'], rector.unit.name
+        ('Ivanov Ivan', 40, 'Rectorate')
         """
         Employee.__init__(self, name, **info)
         Employee.get_job(self, 'rector', pay, unit)
 
     def __str__(self):
         """
-        >>> unit = Unit('rectorate', {})
-        >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> print(rector)
         Rector: Ivanov Ivan
         """
@@ -456,9 +645,9 @@ class Rector(Employee):
 
     def to_order(self, order, unit):
         """
-        >>> unit = Rectorate('rectorate', {})
-        >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
-        >>> rector.to_order('preparation of reports', unit)
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
+        >>> rector.to_order('preparation of reports', rectorate)
         Rector Ivanov Ivan ordered the Rectorate on the preparation of reports
         """
         print(self.RECTOR_TO_ORDER.format(self.name, unit.__class__.__name__,
@@ -466,8 +655,8 @@ class Rector(Employee):
 
     def issue_order(self, about):
         """
-        >>> unit = Unit('rectorate', {})
-        >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> emp = Employee('Semenov Semen')
         >>> rector.issue_order('banning smoking in university')
         Rector Ivanov Ivan issued an order banning smoking in university
@@ -476,8 +665,8 @@ class Rector(Employee):
 
     def sign_order(self, about):
         """
-        >>> unit = Unit('rectorate', {})
-        >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> msg = Rector.RECTOR_SIGN_ORDER.format(\
                 rector.name,\
                 'banning smoking in university',\
@@ -490,8 +679,8 @@ class Rector(Employee):
 
     def punish(self, person, what):
         """
-        >>> unit = Unit('rectorate', {})
-        >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> emp = Employee('Semenov Semen')
         >>> rector.punish(emp, 'smoking in university')
         >>> emp.violations[0][0]
@@ -501,8 +690,8 @@ class Rector(Employee):
 
     def promote(self, person, award):
         """
-        >>> unit = Unit('rectorate', {})
-        >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> rector.promote(rector, .1)
         500
         """
@@ -510,13 +699,56 @@ class Rector(Employee):
 
     def _report_for_ministry(self, cause):
         """
-        >>> unit = Unit('rectorate', {})
-        >>> rector = Rector('Ivanov Ivan', 5000, unit, age=40)
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> rector._report_for_ministry('execution of the order #01')
         Rector Ivanov Ivan reported to the Ministry of the execution of the \
 order #01
         """
         print(self.RECTOR_REPORT.format(self.name, cause))
+
+
+class Dean(Rector):
+
+    # --------------
+    # Message format
+    # --------------
+    DEAN = 'Dean: {0}'
+    # --------------
+
+    def __init__(self, name, pay, unit, **info):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> dean = Dean('Ivanov Ivan', 5000, f_fzo, age=40)
+        >>> dean.name, dean.info['age'], dean.unit.name
+        ('Ivanov Ivan', 40, 'FZO')
+        """
+        Employee.__init__(self, name, **info)
+        Employee.get_job(self, 'dean', pay, unit)
+
+    def __str__(self):
+        return self.DEAN.format(self.name)
+
+
+class Teacher(Employee):
+
+    def __init__(self, name, **info):
+        Employee.__init__(self, name, **info)
+
+
+class Student(Person):
+
+    # --------------
+    # Message format
+    # --------------
+    STUDENT = 'Student: {0}'
+    # --------------
+
+    def __init__(self, name, **info):
+        Person.__init__(self, name, **info)
+
+    def __str__(self):
+        return self.STUDENT.format(self.name)
 
 
 if __name__ == '__main__':
