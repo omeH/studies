@@ -297,7 +297,7 @@ class Faculty(Unit):
 
     departments = None
     groups = None
-    training_plag = None
+    training_plan = None
 
     def __init__(self, name, consist):
         """
@@ -327,11 +327,14 @@ class Faculty(Unit):
         >>> f_fzo.add_unit(g_900502)
         >>> len(f_fzo.departments), len(f_fzo.groups)
         (1, 1)
+        >>> g_900502.faculty is f_fzo
+        True
         """
         if isinstance(unit, Department):
             self.departments.append(unit)
         elif isinstance(unit, Group):
             self.groups.append(unit)
+            unit.faculty = self
 
     def del_unit(self, unit):
         """
@@ -346,6 +349,8 @@ class Faculty(Unit):
         >>> f_fzo.del_unit(g_900502)
         >>> f_fzo.departments, f_fzo.groups
         ([], [])
+        >>> g_900502 is f_fzo
+        False
         >>> f_fzo.del_unit(g_900502)
         Traceback (most recent call last):
             ...
@@ -355,6 +360,7 @@ class Faculty(Unit):
             self.departments.remove(unit)
         elif isinstance(unit, Group):
             self.groups.remove(unit)
+            unit.faculty = None
 
     def order_for_expulsion(self, act, students):
         """
@@ -372,7 +378,6 @@ class Faculty(Unit):
             order = ''.join([order, '\n', TAB, str(student)])
         return order
 
-
     def develop_training_plan(self, lesson, data):
         """
         >>> f_fzo = Faculty('FZO', {})
@@ -385,17 +390,143 @@ class Faculty(Unit):
         self.training_plan[lesson] = (data, len(data))
 
 
-
 class Department(Unit):
 
+    # --------------
+    # Message format
+    # --------------
+    DEPARTMENT = 'Department: {0}'
+    DEPARTMENT_GRADUATE = 'Department - {0}; group - {1}; graduates:'
+    # --------------
+
+    lessons = None
+    consultation = None
+
     def __init__(self, name, consist):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> d_evm.name, d_evm.consist, d_evm.lessons
+        ('EVM', {}, [])
+        """
         Unit.__init__(self, name, consist)
+        self.lessons = []
+        self.consultation = {}
+
+    def __str__(self):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> print(d_evm)
+        Department: EVM
+        """
+        return self.DEPARTMENT.format(self.name)
+
+    def add_consultation(self, teacher, lesson, room, date):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', age=25)
+        >>> d_evm.add_consultation(teacher, 'OPIP', '501-5', today())
+        >>> len(d_evm.consultation[teacher])
+        1
+        >>> d_evm.add_consultation(teacher, 'VKSIS', '501-5', today())
+        >>> len(d_evm.consultation[teacher])
+        2
+        """
+        if self.consultation.has_key(teacher):
+            self.consultation[teacher].append(Consultation(lesson, room, date))
+        else:
+            self.consultation[teacher] = [Consultation(lesson, room, date)]
+
+    def del_consultation(self, teacher, lesson):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', age=25)
+        >>> d_evm.add_consultation(teacher, 'OPIP', '501-5', today())
+        >>> len(d_evm.consultation[teacher])
+        1
+        >>> d_evm.add_consultation(teacher, 'VKSIS', '501-5', today())
+        >>> len(d_evm.consultation[teacher])
+        2
+        >>> d_evm.del_consultation(teacher, 'OPIP')
+        >>> len(d_evm.consultation[teacher])
+        1
+        >>> d_evm.del_consultation(teacher, 'VKSIS')
+        >>> d_evm.consultation.has_key(teacher)
+        False
+        """
+        if self.consultation.has_key(teacher):
+            self.consultation[teacher].remove(lesson)
+            if not self.consultation[teacher]:
+                self.consultation.pop(teacher)
+
+    def issue_graduate(self, group):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> g_900502 = Group('Gr900502', {})
+        >>> st_1 = Student('Ivanov Ivan', age=20)
+        >>> st_2 = Student('Semenov Semen', age=20)
+        >>> g_900502.recruit(st_1.position, st_1)
+        True
+        >>> g_900502.recruit(st_2.position, st_2)
+        True
+        >>> print(d_evm.issue_graduate(g_900502))
+        Department - EVM; group - 900502; graduates:
+            Student: Ivanov Ivan
+            Student: Semenov Semen
+        """
+        msg = self.DEPARTMENT_GRADUATE.format(self.name, group.number)
+        for student in group.consist['student']:
+            msg = ''.join([msg, '\n', TAB, str(student)])
+        return msg
+
+
+class Consultation(object):
+
+    # --------------
+    # Message format
+    # --------------
+    CONSULTATION = 'Lesson - {0}; room - {1}; date - {2}'
+    # --------------
+
+    def __init__(self, lesson, room, date):
+        """
+        >>> consultation = Consultation('OPIP', '501-5', today())
+        >>> consultation.lesson, consultation.room
+        ('OPIP', '501-5')
+        """
+        self.lesson = lesson
+        self.room = room
+        self.date = date
+
+    def __str__(self):
+        """
+        >>> consultation = Consultation('OPIP', '501-5', today())
+        >>> msg = Consultation.CONSULTATION.format('OPIP', '501-5', today())
+        >>> str(consultation) == msg
+        True
+        """
+        return self.CONSULTATION.format(
+            self.lesson, self.room, self.date
+        )
+
+    def __eq__(self, other):
+        """
+        >>> consultation = Consultation('OPIP', '501-5', today())
+        >>> consultation == 'OPIP'
+        True
+        >>> consultation == 'VKSIS'
+        False
+        """
+        return self.lesson == other
 
 
 class Group(Unit):
 
+    faculty = None
+    number = None
+
     def __init__(self, name, consist):
         Unit.__init__(self, name, consist)
+        self.number = name[-6:]
 
 
 class Person(object):
@@ -438,6 +569,7 @@ about cars
     name_key = ['Surname', 'Name', 'Patronymic']
     name = 'Incognito'
     _name = {key: 'Incognito' for key in name_key}
+    position = None
 
     def __init__(self, name=None, **info):
         self.info = {}
@@ -481,7 +613,7 @@ class Employee(Person):
     EMPLOYEE_VACATION = 'For a {0} vacation ends {1}'
     # --------------
 
-    position = None
+    # position = None
     unit = None
     pay = None
     start_work = None
@@ -708,6 +840,37 @@ order #01
         print(self.RECTOR_REPORT.format(self.name, cause))
 
 
+class ViceRector(Rector):
+
+    # --------------
+    # Message format
+    # --------------
+    VICERECTOR = 'ViceRector: {0}'
+    # --------------
+
+    direction = None
+
+    def __init__(self, name, pay, unit, direction, **info):
+        """
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> v_rector = ViceRector('Ivanov Ivan', 4000, rectorate,'study',age=40)
+        >>> v_rector.name, v_rector.direction, v_rector.pay,v_rector.info['age']
+        ('Ivanov Ivan', 'study', 4000, 40)
+        """
+        Employee.__init__(self, name, **info)
+        self.direction = direction
+        Employee.get_job(self, 'vicerector', pay, unit)
+
+    def __str__(self):
+        """
+        >>> rectorate = Rectorate('Rectorate', {})
+        >>> v_rector = ViceRector('Ivanov Ivan', 4000, rectorate,'study',age=40)
+        >>> print(v_rector)
+        ViceRector: Ivanov Ivan
+        """
+        return self.VICERECTOR.format(self.name)
+
+
 class Dean(Rector):
 
     # --------------
@@ -727,6 +890,12 @@ class Dean(Rector):
         Employee.get_job(self, 'dean', pay, unit)
 
     def __str__(self):
+        """
+        >>> f_fzo = Faculty('FZO', {})
+        >>> dean = Dean('Ivanov Ivan', 5000, f_fzo, age=50)
+        >>> print(dean)
+        Dean: Ivanov Ivan
+        """
         return self.DEAN.format(self.name)
 
 
@@ -746,6 +915,7 @@ class Student(Person):
 
     def __init__(self, name, **info):
         Person.__init__(self, name, **info)
+        self.position = 'student'
 
     def __str__(self):
         return self.STUDENT.format(self.name)
