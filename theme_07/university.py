@@ -1,13 +1,19 @@
 import datetime
+import random
 
 
 YEAR = 365
+MIN_RATING = 1
+POSITIVE_RATING = 4
+MAX_RATING = 10
 
 VIOLATIONS = {
     '001': 'drinking alcohol',
     '002': 'smoked in the room',
     '003': 'absent from work',
-    '004': '{0} days absent from work'
+    '004': '{0} days absent from work',
+    '005': 'absent from lesson {0}',
+    '006': '{0} days absent from lessons'
 }
 
 TAB = '    '
@@ -158,8 +164,8 @@ class Unit(object):
         """
         check = []
         if person.info.has_key('age'):
-             check.append(False if person.info['age'] >= \
-                          self.restrictions['age'] else True)
+            check.append(False if person.info['age'] >=
+                         self.restrictions['age'] else True)
 
         if self.restrictions['Rector']:
             check.append(True)
@@ -322,7 +328,8 @@ class Faculty(Unit):
         """
         >>> f_fzo = Faculty('FZO', {})
         >>> d_evm = Department('EVM', {})
-        >>> g_900502 = Group('900502', {})
+        >>> teacher  = Teacher('Sidorov Semen', 3000, d_evm, age=30)
+        >>> g_900502 = Group('900502', {}, teacher)
         >>> f_fzo.add_unit(d_evm)
         >>> f_fzo.add_unit(g_900502)
         >>> len(f_fzo.departments), len(f_fzo.groups)
@@ -340,7 +347,8 @@ class Faculty(Unit):
         """
         >>> f_fzo = Faculty('FZO', {})
         >>> d_evm = Department('EVM', {})
-        >>> g_900502 = Group('900502', {})
+        >>> teacher  = Teacher('Sidorov Semen', 3000, d_evm, age=30)
+        >>> g_900502 = Group('900502', {}, teacher)
         >>> f_fzo.add_unit(d_evm)
         >>> f_fzo.add_unit(g_900502)
         >>> len(f_fzo.departments), len(f_fzo.groups)
@@ -365,8 +373,10 @@ class Faculty(Unit):
     def order_for_expulsion(self, act, students):
         """
         >>> f_fzo = Faculty('FZO', {})
-        >>> st_1 = Student('Ivanov Ivan', age=19)
-        >>> st_2 = Student('Semenov Semen', age=20)
+        >>> teacher  = Teacher('Sidorov Semen', 3000, f_fzo, age=30)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st_1 = Student('Ivanov Ivan', g_900502, age=19)
+        >>> st_2 = Student('Semenov Semen', g_900502, age=20)
         >>> order = f_fzo.order_for_expulsion('12', [st_1, st_2])
         >>> print(order)
         Order No.12 on the expulsion of students:
@@ -423,7 +433,7 @@ class Department(Unit):
     def add_consultation(self, teacher, lesson, room, date):
         """
         >>> d_evm = Department('EVM', {})
-        >>> teacher = Teacher('Ivanov Ivan', age=25)
+        >>> teacher = Teacher('Ivanov Ivan', 2500, d_evm, age=25)
         >>> d_evm.add_consultation(teacher, 'OPIP', '501-5', today())
         >>> len(d_evm.consultation[teacher])
         1
@@ -439,7 +449,7 @@ class Department(Unit):
     def del_consultation(self, teacher, lesson):
         """
         >>> d_evm = Department('EVM', {})
-        >>> teacher = Teacher('Ivanov Ivan', age=25)
+        >>> teacher = Teacher('Ivanov Ivan', 2500, d_evm, age=25)
         >>> d_evm.add_consultation(teacher, 'OPIP', '501-5', today())
         >>> len(d_evm.consultation[teacher])
         1
@@ -461,13 +471,10 @@ class Department(Unit):
     def issue_graduate(self, group):
         """
         >>> d_evm = Department('EVM', {})
-        >>> g_900502 = Group('Gr900502', {})
-        >>> st_1 = Student('Ivanov Ivan', age=20)
-        >>> st_2 = Student('Semenov Semen', age=20)
-        >>> g_900502.recruit(st_1.position, st_1)
-        True
-        >>> g_900502.recruit(st_2.position, st_2)
-        True
+        >>> teacher  = Teacher('Sidorov Semen', 3000, d_evm, age=30)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st_1 = Student('Ivanov Ivan', g_900502, age=20)
+        >>> st_2 = Student('Semenov Semen', g_900502, age=20)
         >>> print(d_evm.issue_graduate(g_900502))
         Department - EVM; group - 900502; graduates:
             Student: Ivanov Ivan
@@ -521,12 +528,29 @@ class Consultation(object):
 
 class Group(Unit):
 
+    # --------------
+    # Message format
+    # --------------
+    GROUP = 'Group: {0}'
+    # --------------
+
     faculty = None
     number = None
+    curator = None
+    elder = None
 
-    def __init__(self, name, consist):
+    def __init__(self, name, consist, curator):
         Unit.__init__(self, name, consist)
         self.number = name[-6:]
+        self.curator = curator
+
+    def __str__(self):
+        return self.GROUP.format(self.name)
+
+    def recruit(self, position, student, elder=False):
+        Unit.recruit(self, position, student)
+        if elder:
+            self.elder = student
 
 
 class Person(object):
@@ -764,7 +788,7 @@ class Rector(Employee):
         ('Ivanov Ivan', 40, 'Rectorate')
         """
         Employee.__init__(self, name, **info)
-        Employee.get_job(self, 'rector', pay, unit)
+        self.get_job('rector', pay, unit)
 
     def __str__(self):
         """
@@ -859,7 +883,7 @@ class ViceRector(Rector):
         """
         Employee.__init__(self, name, **info)
         self.direction = direction
-        Employee.get_job(self, 'vicerector', pay, unit)
+        self.get_job('vicerector', pay, unit)
 
     def __str__(self):
         """
@@ -887,7 +911,7 @@ class Dean(Rector):
         ('Ivanov Ivan', 40, 'FZO')
         """
         Employee.__init__(self, name, **info)
-        Employee.get_job(self, 'dean', pay, unit)
+        self.get_job('dean', pay, unit)
 
     def __str__(self):
         """
@@ -901,8 +925,175 @@ class Dean(Rector):
 
 class Teacher(Employee):
 
-    def __init__(self, name, **info):
+    # --------------
+    # Message format
+    # --------------
+    TEACHER = 'Teacher: {0}'
+    TEACHER_SESSION = 'Today teacher {0} on lesson {1} said a theme \'{2}\''
+    TEACHER_LATE = 'Teacher {0} late the lesson {1} for {2} minutes'
+    # --------------
+
+    lessons = None
+
+    def __init__(self, name, pay, unit, **info):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> teacher.name, teacher.info['age'], teacher.position
+        ('Ivanov Ivan', 30, 'teacher')
+        """
         Employee.__init__(self, name, **info)
+        self.get_job('teacher', pay, unit)
+        self.lessons = {}
+
+    def __str__(self):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> print(teacher)
+        Teacher: Ivanov Ivan
+        """
+        return self.TEACHER.format(self.name)
+
+    def conduct_training_session(self, lesson, theme):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> data = 'Data types Python language'
+        >>> teacher.conduct_training_session('OPIP', data)
+        Today teacher Ivanov Ivan on lesson OPIP said a theme 'Data types \
+Python language'
+        """
+        print(self.TEACHER_SESSION.format(self.name, lesson, theme))
+
+    def punish_student(self, student, violation):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> student = Student('Semenov Semen', g_900502, age=20)
+        >>> teacher.punish_student(student, 'smoking in room')
+        >>> student.violations[0][0]
+        'smoking in room'
+        """
+        student.commit_violation(violation)
+
+    def develop_training_program(self, lesson, data):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> data = 'Familiarity with the language Python. Data types Python \
+language'
+        >>> teacher.develop_training_program('OPIP', data)
+        >>> teacher.lessons['OPIP'][0]
+        'Familiarity with the language Python'
+        """
+        self.lessons[lesson] = [string.strip() for string in data.split('.')]
+
+    def conduct_exam(self, lesson, group, limit=MAX_RATING):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st_1 = Student('Semenov Semen', g_900502, age=20)
+        >>> st_2 = Student('Sidorov Ivan', g_900502, age=19)
+        >>> teacher.conduct_exam('OPIP', g_900502)
+        >>> len(st_1.exam), len(st_2.exam)
+        (1, 1)
+        >>> 'OPIP' in st_1.exam, 'OPIP' in st_2.exam
+        (True, True)
+        """
+        for student in group.consist['student']:
+            if not lesson in student.exam:
+                student.exam.append(Exam(
+                    lesson, random.randrange(MIN_RATING, limit), self))
+
+    def conduct_retake(self, exam):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> exam = Exam('OPIP', 3, teacher)
+        >>> teacher.conduct_retake(exam)
+        >>> exam.rating >= 4
+        True
+        """
+        exam.rating = random.randrange(POSITIVE_RATING, MAX_RATING)
+
+    def set_automatic_rating(self, student, lesson):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st = Student('Semenov Semen', g_900502, age=20)
+        >>> teacher.set_automatic_rating(st, 'OPIP')
+        >>> st.exam[0].rating
+        10
+        """
+        student.exam.append(Exam(lesson, MAX_RATING, self))
+
+    def late_on_lesson(self, lesson, minutes):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> teacher.late_on_lesson('OPIP', 5)
+        Teacher Ivanov Ivan late the lesson OPIP for 5 minutes
+        """
+        print self.TEACHER_LATE.format(self.name, lesson, minutes)
+
+
+class Exam(object):
+
+    # --------------
+    # Message format
+    # --------------
+    EXAM = 'Lesson - {0}; rating - {1}'
+    # --------------
+
+    def __init__(self, lesson, rating, teacher):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> exam = Exam('OPIP', 4, teacher)
+        >>> exam.lesson, exam.rating, teacher.name
+        ('OPIP', 4, 'Ivanov Ivan')
+        """
+        self.lesson = lesson
+        self.rating = rating
+        self.teacher = teacher
+
+    def __str__(self):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> exam = Exam('OPIP', 4, teacher)
+        >>> print(exam)
+        Lesson - OPIP; rating - 4
+        """
+        return self.EXAM.format(self.lesson, self.rating)
+
+    def __eq__(self, other):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> exam = Exam('OPIP', 4, teacher)
+        >>> exam == 'OPIP'
+        True
+        >>> exam == 'VKSIS'
+        False
+        """
+        return self.lesson == other
+
+    def __lt__(self, other):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> exam = Exam('OPIP', 4, teacher)
+        >>> exam < 7
+        True
+        >>> exam < 3
+        False
+        """
+        return self.rating < other
 
 
 class Student(Person):
@@ -911,14 +1102,126 @@ class Student(Person):
     # Message format
     # --------------
     STUDENT = 'Student: {0}'
+    STUDENT_ATTEND_LESSONS = 'Student {0} attend today lessons:'
+    STUDENT_LATE = 'Student {0} late the lesson {1} for {2} minutes'
     # --------------
 
-    def __init__(self, name, **info):
+    rate = 1
+
+    def __init__(self, name, group, **info):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st_1 = Student('Semenov Semen', g_900502, age=20)
+        >>> st_2 = Student('Sidorov Ivan', g_900502, age=19, elder=True)
+        >>> st_1.name, st_2.name
+        ('Semenov Semen', 'Sidorov Ivan')
+        >>> g_900502.elder.name
+        'Sidorov Ivan'
+        """
         Person.__init__(self, name, **info)
         self.position = 'student'
+        if info.has_key('elder'):
+            group.recruit('student', self, elder=True)
+        else:
+            group.recruit('student', self)
+        self.group = group
+        self.exam = []
 
     def __str__(self):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st = Student('Semenov Semen', g_900502, age=20)
+        >>> print(st)
+        Student: Semenov Semen
+        """
         return self.STUDENT.format(self.name)
+
+    def attend_lessons(self, lessons):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st = Student('Semenov Semen', g_900502, age=20)
+        >>> lessons_today = ['OPIP', 'MG', 'VKSIS']
+        >>> print(st.attend_lessons(lessons_today))
+        Student Semenov Semen attend today lessons:
+            OPIP
+            MG
+            VKSIS
+        """
+        msg = self.STUDENT_ATTEND_LESSONS.format(self.name)
+        for lesson in lessons:
+            msg = ''.join([msg, '\n', TAB, lesson])
+        return msg
+
+    def absent_lesson(self, lesson):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st = Student('Semenov Semen', g_900502, age=20)
+        >>> st.absent_lesson('OPIP')
+        >>> st.violations[0][0]
+        'absent from lesson OPIP'
+        """
+        self.violations.append((VIOLATIONS['005'].format(lesson), today()))
+
+    def late_on_lesson(self, lesson, minutes):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st = Student('Semenov Semen', g_900502, age=20)
+        >>> st.late_on_lesson('OPIP', 10)
+        Student Semenov Semen late the lesson OPIP for 10 minutes
+        """
+        print(self.STUDENT_LATE.format(self.name, lesson, minutes))
+
+    def score_lessons(self, days):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 4000, d_evm, age=40)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st = Student('Semenov Semen', g_900502, age=20)
+        >>> st.score_lessons(5)
+        >>> st.violations[0]
+        '5 days absent from lessons'
+        """
+        self.violations.append(VIOLATIONS['006'].format(days))
+
+    def go_retake(self):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st_1 = Student('Semenov Semen', g_900502, age=20)
+        >>> st_2 = Student('Sidorov Ivan', g_900502, age=19)
+        >>> teacher.conduct_exam('OPIP', g_900502, limit=3)
+        >>> st_1.exam[0] < 4, st_2.exam[0] < 4
+        (True, True)
+        >>> st_1.go_retake(); st_2.go_retake()
+        >>> st_1.exam[0] < 4, st_2.exam[0] < 4
+        (False, False)
+        """
+        for exam in self.exam:
+            if exam < POSITIVE_RATING:
+                exam.teacher.conduct_retake(exam)
+
+    def get_automatic_rating(self, teacher, lesson):
+        """
+        >>> d_evm = Department('EVM', {})
+        >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
+        >>> g_900502 = Group('Gr900502', {}, teacher)
+        >>> st = Student('Semenov Semen', g_900502, age=20)
+        >>> st.get_automatic_rating(teacher, 'OPIP')
+        >>> st.exam[0].rating
+        10
+        """
+        teacher.set_automatic_rating(self, lesson)
 
 
 if __name__ == '__main__':
