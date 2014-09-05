@@ -7,13 +7,20 @@ MIN_RATING = 1
 POSITIVE_RATING = 4
 MAX_RATING = 10
 
+DRINKING_ALCOHOL = 1
+SMOKED_IN_ROOM = 2
+ABSENT_FROM_WORK = 3
+N_DAYS_ABSENT_FROM_WORK = 4
+ABSENT_FROM_LESSON = 5
+N_DAYS_ABSENT_FRON_LESSON = 6
+
 VIOLATIONS = {
-    '001': 'drinking alcohol',
-    '002': 'smoked in the room',
-    '003': 'absent from work',
-    '004': '{0} days absent from work',
-    '005': 'absent from lesson {0}',
-    '006': '{0} days absent from lessons'
+    DRINKING_ALCOHOL: 'drinking alcohol',
+    SMOKED_IN_ROOM: 'smoked in the room',
+    ABSENT_FROM_WORK: 'absent from work',
+    N_DAYS_ABSENT_FROM_WORK: '{0} days absent from work',
+    ABSENT_FROM_LESSON: 'absent from lesson {0}',
+    N_DAYS_ABSENT_FRON_LESSON: '{0} days absent from lessons'
 }
 
 TAB = '    '
@@ -25,6 +32,11 @@ def today():
 
 def timedelta(term):
     return datetime.timedelta(days=term)
+
+
+class AccessDenied(Exception):
+
+    pass
 
 
 class Unit(object):
@@ -96,7 +108,7 @@ class Unit(object):
 
     def exclude(self, person):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector_1 = Rector('Ivanov Ivan', 5000, rectorate, age=50)
         >>> rector_2 = Rector('Semenov Semen', 4500, rectorate, age=45)
         >>> rectorate.consist['rector'][0].name
@@ -151,7 +163,7 @@ class Unit(object):
         >>> emp_2 = Employee('Semenov Semen', age=16)
         >>> f_fzo.refuse(emp_2)
         True
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector_1 = Rector('Ivanov Ivan', 5000, rectorate, age=50)
         >>> rector_2 = Rector('Semenov Semen', 4500, rectorate, age=45)
         >>> rectorate.refuse(rector_2)
@@ -241,7 +253,7 @@ class Rectorate(Unit):
 
     def __str__(self):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> print(rectorate)
         Rectorate: Rectorate
         """
@@ -576,7 +588,7 @@ class Person(object):
     >>> person_1.violations[0][0]
     'smoked in the room'
     >>> person_1.talk(person_2, 'cars')
-    A person Ivanov Ivan Ivanovich talk to a Semenov Semen Semenovich \
+    A Person Ivanov Ivan Ivanovich talk to a Person Semenov Semen Semenovich \
 about cars
     """
 
@@ -584,10 +596,10 @@ about cars
     # Message format
     # --------------
     PERSON = 'Person: {0}'
-    PERSON_GO = 'Person {0} goes to {1}'
-    PERSON_RUN = 'Person {0} running to {1}'
-    PERSON_CELEBRATE = 'Person {0} celebration the {1} with:'
-    PERSON_TALK = 'A person {0} talk to a {1} about {2}'
+    PERSON_GO = '{0} {1} goes to {2}'
+    PERSON_RUN = '{0} {1} running to {2}'
+    PERSON_CELEBRATE = '{0} {1} celebration the {2} with:'
+    PERSON_TALK = 'A {0} {1} talk to a {2} {3} about {4}'
     # --------------
 
     name_key = ['Surname', 'Name', 'Patronymic']
@@ -609,13 +621,14 @@ about cars
         return self.PERSON.format(self.name)
 
     def go_to(self, to):
-        print(self.PERSON_GO.format(self.name, to))
+        print(self.PERSON_GO.format(self.__class__.__name__, self.name, to))
 
     def run_to(self, to):
-        print(self.PERSON_RUN.format(self.name, to))
+        print(self.PERSON_RUN.format(self.__class__.__name__, self.name, to))
 
     def celebrate(self, what, with_whom):
-        print(self.PERSON_CELEBRATE.format(self.name, what))
+        print(self.PERSON_CELEBRATE.format(self.__class__.__name__,
+                                           self.name, what))
         for person in with_whom:
             print('{0}{1}'.format(TAB, person))
 
@@ -623,7 +636,9 @@ about cars
         self.violations.append((view, str(today())))
 
     def talk(self, person, about):
-        print(self.PERSON_TALK.format(self.name, person.name, about))
+        print(self.PERSON_TALK.format(self.__class__.__name__, self.name,
+                                      person.__class__.__name__, person.name,
+                                      about))
 
 
 class Employee(Person):
@@ -756,7 +771,7 @@ contract
         >>> emp.violations[0][0]
         'absent from work'
         """
-        self.commit_violation(VIOLATIONS['003'])
+        self.commit_violation(VIOLATIONS[ABSENT_FROM_WORK])
 
     def score_work(self, days):
         """
@@ -765,7 +780,7 @@ contract
         >>> emp.violations[0][0]
         '5 days absent from work'
         """
-        self.commit_violation(VIOLATIONS['004'].format(days))
+        self.commit_violation(VIOLATIONS[N_DAYS_ABSENT_FROM_WORK].format(days))
 
 
 class Rector(Employee):
@@ -778,11 +793,12 @@ class Rector(Employee):
     RECTOR_ISSUE_ORDER = 'Rector {0} issued an order {1}'
     RECTOR_SIGN_ORDER = 'Rector {0} signed an order {1} of {2}'
     RECTOR_REPORT = 'Rector {0} reported to the Ministry of the {1}'
+    RECTOR_NO_REPORT = 'Object {0} class access is denied'
     # --------------
 
     def __init__(self, name, pay, unit, **info):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> rector.name, rector.info['age'], rector.unit.name
         ('Ivanov Ivan', 40, 'Rectorate')
@@ -792,7 +808,7 @@ class Rector(Employee):
 
     def __str__(self):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> print(rector)
         Rector: Ivanov Ivan
@@ -801,7 +817,7 @@ class Rector(Employee):
 
     def to_order(self, order, unit):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> rector.to_order('preparation of reports', rectorate)
         Rector Ivanov Ivan ordered the Rectorate on the preparation of reports
@@ -811,7 +827,7 @@ class Rector(Employee):
 
     def issue_order(self, about):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> emp = Employee('Semenov Semen')
         >>> rector.issue_order('banning smoking in university')
@@ -821,7 +837,7 @@ class Rector(Employee):
 
     def sign_order(self, about):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> msg = Rector.RECTOR_SIGN_ORDER.format(\
                 rector.name,\
@@ -835,7 +851,7 @@ class Rector(Employee):
 
     def punish(self, person, what):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> emp = Employee('Semenov Semen')
         >>> rector.punish(emp, 'smoking in university')
@@ -846,21 +862,30 @@ class Rector(Employee):
 
     def promote(self, person, award):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
         >>> rector.promote(rector, .1)
         500
         """
         print(person.receive_award(award))
 
-    def _report_for_ministry(self, cause):
+    def report_for_ministry(self, cause):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
-        >>> rector._report_for_ministry('execution of the order #01')
+        >>> rector.report_for_ministry('execution of the order #01')
         Rector Ivanov Ivan reported to the Ministry of the execution of the \
 order #01
+        >>> v_rector = ViceRector('Semenov Semen',3000,rectorate,'study',age=30)
+        >>> v_rector.report_for_ministry('execution of the order #01')
+        Traceback (most recent call last):
+            ...
+        AccessDenied: Object ViceRector class access is denied
         """
+        if self.__class__ is not Rector:
+            raise AccessDenied(
+                self.RECTOR_NO_REPORT.format(self.__class__.__name__)
+            )
         print(self.RECTOR_REPORT.format(self.name, cause))
 
 
@@ -876,7 +901,7 @@ class ViceRector(Rector):
 
     def __init__(self, name, pay, unit, direction, **info):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> v_rector = ViceRector('Ivanov Ivan', 4000, rectorate,'study',age=40)
         >>> v_rector.name, v_rector.direction, v_rector.pay,v_rector.info['age']
         ('Ivanov Ivan', 'study', 4000, 40)
@@ -887,7 +912,7 @@ class ViceRector(Rector):
 
     def __str__(self):
         """
-        >>> rectorate = Rectorate('Rectorate', {})
+        >>> rectorate = Rectorate({}, {})
         >>> v_rector = ViceRector('Ivanov Ivan', 4000, rectorate,'study',age=40)
         >>> print(v_rector)
         ViceRector: Ivanov Ivan
@@ -1004,7 +1029,7 @@ language'
         (True, True)
         """
         for student in group.consist['student']:
-            if not lesson in student.exam:
+            if lesson not in student.exam:
                 student.exam.append(Exam(
                     lesson, random.randrange(MIN_RATING, limit), self))
 
@@ -1168,7 +1193,9 @@ class Student(Person):
         >>> st.violations[0][0]
         'absent from lesson OPIP'
         """
-        self.violations.append((VIOLATIONS['005'].format(lesson), today()))
+        self.violations.append(
+            (VIOLATIONS[ABSENT_FROM_LESSON].format(lesson), today())
+        )
 
     def late_on_lesson(self, lesson, minutes):
         """
@@ -1191,7 +1218,9 @@ class Student(Person):
         >>> st.violations[0]
         '5 days absent from lessons'
         """
-        self.violations.append(VIOLATIONS['006'].format(days))
+        self.violations.append(
+            VIOLATIONS[N_DAYS_ABSENT_FRON_LESSON].format(days)
+        )
 
     def go_retake(self):
         """
