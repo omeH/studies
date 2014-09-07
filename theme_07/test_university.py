@@ -34,7 +34,7 @@ LEN_SURNAME = len(SURNAME)
 
 NAME = [
     'Aleksandor', 'Maxim',
-    'Ivan', 'Dmiyrii',
+    'Ivan', 'Dmitrii',
     'Nikovai', 'Mihail'
     'Anastasia', 'Elizaveta',
     'Victiria', 'Ekaterina'
@@ -61,6 +61,13 @@ VICERECTOR_DIRECTION = [
     'development', 'marketing',
     'science'
 ]
+
+POSITIONS = [
+    'secretary', 'manager',
+    'guard', 'driver',
+    'methodist', 'librarian'
+]
+LEN_POSITIONS = len(POSITIONS)
 
 
 class PersonAction(object):
@@ -93,23 +100,7 @@ class PersonAction(object):
         return self.actions[self.action]
 
 
-def init_list_person():
-    return [
-        u.Employee, u.Rector,
-        u.ViceRector, u.Dean,
-        u.Teacher, u.Student
-    ]
-
-
-def init_list_unit():
-    return [
-        u.Rectorate, u.Faculty,
-        u.Department, u.Group
-    ]
-
-
 def random_name_person():
-    """docstring for random_name_person"""
     return ''.join([
         NAME[random.randrange(LEN_NAME)], ' ',
         SURNAME[random.randrange(LEN_SURNAME)], ' ',
@@ -119,13 +110,18 @@ def random_name_person():
 
 def random_department(faculties):
     len_f = len(faculties)
-    faculty = faculties[random.randrange(len_f)]
-    len_d = len(faculty.departments)
+    len_d = 0
+    while len_d == 0:
+        faculty = faculties[random.randrange(len_f)]
+        len_d = len(faculty.departments)
     return faculty.departments[random.randrange(len_d)]
 
 
 def random_curator(faculties):
-    department = random_department(faculties)
+    while True:
+        department = random_department(faculties)
+        if department.consist.has_key('teacher'):
+            break
     len_t = len(department.consist['teacher'])
     return department.consist['teacher'][random.randrange(len_t)]
 
@@ -141,7 +137,6 @@ def set_faculty_for_group(faculties, len_f, groups):
 
 
 def init_department(name):
-    """docstring for init_department"""
     return u.Department(name, {})
 
 
@@ -157,6 +152,10 @@ def init_employee(unit):
     return u.Employee(
         random_name_person(),
         age=random.randrange(MIN_AGE, MAX_AGE)
+    ).get_job(
+        POSITIONS[random.randrange(LEN_POSITIONS)],
+        random.randrange(MIN_SALARY, MAX_SALARY),
+        unit
     )
 
 
@@ -189,7 +188,6 @@ def init_dean(faculty):
 
 
 def init_teacher(department):
-    """docstring for init_teacher"""
     return u.Teacher(
         random_name_person(),
         random.randrange(MIN_SALARY, MAX_SALARY),
@@ -207,7 +205,6 @@ def init_student(group):
 
 
 def init_structure():
-    """docstring for init_structure"""
     # Init departments consist
     departments = [init_department(name) for name in NAME_DEPARTMENT]
     len_d = len(departments)
@@ -224,7 +221,7 @@ def init_structure():
     for _ in range(LOWER_LIMIT, MAX_EMPLOYEE):
         init_employee(faculties[random.randrange(len_f)])
 
-    # Set faculty for depatments
+    # Set faculty for departments
     set_faculty_for_department(faculties, len_f, departments)
 
     # Init groups
@@ -251,7 +248,6 @@ def init_structure():
 
 
 def main():
-    """docstring for main"""
     init_structure()
 
 
