@@ -107,7 +107,7 @@ class PersonAction(object):
         self.actions = {
             GO_TO: self.go_to,
             RUN_TO: self.run_to,
-            COMIT_VIOLATION: self.comit_violation,
+            COMIT_VIOLATION: self.commit_violation,
             TALK: self.talk
         }
 
@@ -119,9 +119,14 @@ class PersonAction(object):
         place = PLACE[random.randrange(len(PLACE))]
         self.person.run_to(place)
 
-    def comit_violation(self):
+    def commit_violation(self):
         violation = VIOLATIONS[random.randrange(len(VIOLATIONS))]
         self.person.commit_violation(violation)
+        print('{0} {1} punished for {2}'.format(
+            self.person.__class__.__name__,
+            self.person.name,
+            violation
+        ))
 
     def talk(self):
         theme = THEME_FOR_TALK[random.randrange(len(THEME_FOR_TALK))]
@@ -189,7 +194,7 @@ def random_key(keys):
     return keys[random.randrange(len(keys))]
 
 
-def is_rectorate(unit):
+def get_faculty_or_person(unit):
     if unit.__class__ is not u.Rectorate:
         return None
     if structure_or_consisct():
@@ -201,7 +206,7 @@ def is_rectorate(unit):
         return unit.structure[key][random.randrange(len_u)]
 
 
-def is_faculty(unit):
+def get_department_or_person(unit):
     if unit.__class__ is not u.Faculty:
         return None
     if structure_or_consisct():
@@ -346,11 +351,11 @@ def init_structure():
 
 def run(unit, count):
     for _ in range(count):
-        faculty_or_person = is_rectorate(unit)
+        faculty_or_person = get_faculty_or_person(unit)
         if is_person(faculty_or_person):
             PersonAction(faculty_or_person).rundom_action()
             continue
-        unit_or_person = is_faculty(faculty_or_person)
+        unit_or_person = get_department_or_person(faculty_or_person)
         if is_person(unit_or_person):
             PersonAction(unit_or_person).rundom_action()
             continue
