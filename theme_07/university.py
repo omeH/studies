@@ -179,10 +179,10 @@ class Unit(object):
             check.append(False if person.info['age'] >=
                          self.restrictions['age'] else True)
 
-        if self.restrictions['Rector']:
+        if person.__class__ is Rector and self.restrictions['Rector']:
             check.append(True)
 
-        if self.restrictions['Dean']:
+        if person.__class__ is Dean and self.restrictions['Dean']:
             check.append(True)
 
         return True if True in check else False
@@ -1151,7 +1151,7 @@ class Student(Person):
             group.recruit('student', self, elder=True)
         else:
             group.recruit('student', self)
-        self.group = group
+        self.unit = group
         self.exam = []
 
     def __str__(self):
