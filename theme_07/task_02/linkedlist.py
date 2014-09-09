@@ -162,6 +162,19 @@ class ListIter(object):
         return self
 
     def next(self):
+        """
+        >>> list_1 = List()
+        >>> list_1.append('test')
+        >>> list_1.append('spam')
+        >>> list_1.append('maps')
+        >>> it = iter(list_1)
+        >>> it.next().value
+        'test'
+        >>> it.next().value
+        'spam'
+        >>> it.next().value
+        'maps'
+        """
         if self.current is None:
             raise StopIteration
         note = self.current
