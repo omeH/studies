@@ -45,6 +45,8 @@ class Node(object):
 
 class List(object):
 
+    length = 0
+
     def __init__(self, data=None):
         """
         >>> list_1 = List()
@@ -56,10 +58,13 @@ class List(object):
         >>> print(list_2.head)
         test
         """
-        if not data:
+        if data is None:
             self.head = None
             self.tail = self.head
-            self.length = 0
+        # elif isinstance(data, list):
+        #     self.head = None
+        #     for element in data:
+        #         self.append(element)
         else:
             self.head = Node(data)
             self.tail = self.head
@@ -107,7 +112,7 @@ class List(object):
         >>> list_1.tail.value
         'spam'
         """
-        if not self.head:
+        if self.head is None:
             self.head = Node(element)
             self.tail = self.head
         else:
@@ -123,8 +128,12 @@ class List(object):
         >>> list_1.append('maps')
         >>> list_1.tail.value
         'maps'
+        >>> len(list_1)
+        3
         >>> list_1.pop().value
         'maps'
+        >>> len(list_1)
+        2
         >>> list_1.tail.value
         'spam'
         """
@@ -134,6 +143,7 @@ class List(object):
         self.tail = node
         node = node.link
         self.tail.set_link(node)
+        self.length -= 1
         return node
 
 
@@ -174,6 +184,10 @@ class ListIter(object):
         'spam'
         >>> it.next().value
         'maps'
+        >>> it.next()
+        Traceback (most recent call last):
+            ...
+        StopIteration
         """
         if self.current is None:
             raise StopIteration
