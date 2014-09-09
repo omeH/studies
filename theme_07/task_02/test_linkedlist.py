@@ -27,23 +27,23 @@ class TestClass(object):
         self.list_1 = ll.List([])
         # --- List->__init__(value) ---
         # --- List->get ---
-        assert isinstance(self.list_1.get(), ll.Node)
-        assert self.list_1.get().value == []
+        assert isinstance(self.list_1.get(), list)
+        assert self.list_1.get() == []
         # --- List->append ---
         self.list_1.append('test')
-        assert isinstance(self.list_1.get().value, str)
-        assert self.list_1.get().value == 'test'
+        assert isinstance(self.list_1.get(), str)
+        assert self.list_1.get() == 'test'
         # --- List->append ---
         self.list_1.append({})
-        assert isinstance(self.list_1.get().value, dict)
-        assert self.list_1.get().value == {}
+        assert isinstance(self.list_1.get(), dict)
+        assert self.list_1.get() == {}
         # --- List->append ---
         self.list_1.append(333)
-        assert isinstance(self.list_1.get().value, int)
-        assert self.list_1.get().value == 333
+        assert isinstance(self.list_1.get(), int)
+        assert self.list_1.get() == 333
         # --- List->pop ---
-        assert self.list_1.pop().value == 333
-        assert self.list_1.pop().value == {}
+        assert self.list_1.pop() == 333
+        assert self.list_1.pop() == {}
         # --- List->__len__ ---
         assert len(self.list_1) == 2
 
@@ -56,9 +56,9 @@ class TestClass(object):
         self.it = iter(self.list_1)
         assert isinstance(self.it, ll.ListIter)
         # --- ListIter->next ---
-        assert isinstance(self.it.next().value, str)
-        assert isinstance(self.it.next().value, int)
-        assert isinstance(self.it.next(), ll.Node)
+        assert isinstance(self.it.next(), str)
+        assert isinstance(self.it.next(), int)
+        assert isinstance(self.it.next(), list)
         # --- ListIter->next->StopIteration ---
         with pytest.raises(StopIteration):
             self.it.next()

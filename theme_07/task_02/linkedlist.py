@@ -27,7 +27,7 @@ class Node(object):
         >>> print(node)
         test
         """
-        return str(self.value)
+        return '{0}'.format(self.value)
 
     def set_link(self, link):
         """
@@ -87,7 +87,7 @@ class List(object):
         >>> it = iter(list_1)
         >>> isinstance(it, ListIter)
         True
-        >>> it.next().value
+        >>> it.next()
         'test'
         """
         return ListIter(self)
@@ -95,13 +95,13 @@ class List(object):
     def get(self):
         """
         >>> list_1 = List('test')
-        >>> list_1.get().value
+        >>> list_1.get()
         'test'
         >>> list_1.append('spam')
-        >>> list_1.get().value
+        >>> list_1.get()
         'spam'
         """
-        return self.tail
+        return self.tail.value
 
     def append(self, element):
         """
@@ -130,7 +130,7 @@ class List(object):
         'maps'
         >>> len(list_1)
         3
-        >>> list_1.pop().value
+        >>> list_1.pop()
         'maps'
         >>> len(list_1)
         2
@@ -144,7 +144,7 @@ class List(object):
         node = node.link
         self.tail.set_link(node)
         self.length -= 1
-        return node
+        return node.value
 
 
 class ListIter(object):
@@ -178,11 +178,11 @@ class ListIter(object):
         >>> list_1.append('spam')
         >>> list_1.append('maps')
         >>> it = iter(list_1)
-        >>> it.next().value
+        >>> it.next()
         'test'
-        >>> it.next().value
+        >>> it.next()
         'spam'
-        >>> it.next().value
+        >>> it.next()
         'maps'
         >>> it.next()
         Traceback (most recent call last):
@@ -193,7 +193,7 @@ class ListIter(object):
             raise StopIteration
         note = self.current
         self.current = self.current.link
-        return note
+        return note.value
 
 
 if __name__ == '__main__':
