@@ -7,13 +7,27 @@ Description:
 """
 
 
+def isiterable(p_object):
+    try:
+        iter(p_object)
+    except TypeError:
+        return False
+    else:
+        return True
+
+
 class Node(object):
+    """
+    Node(value) -> new Node initialized
+    """
 
     value = None
     link = None
 
     def __init__(self, value):
         """
+        N.__init__(value) -- initialized object Node
+
         >>> node_1 = Node('test')
         >>> node_2 = Node('spam')
         >>> node_1.value, node_2.value
@@ -23,14 +37,27 @@ class Node(object):
 
     def __str__(self):
         """
+        N.__str__() <==> str(N)
+
         >>> node = Node('test')
         >>> print(node)
         test
         """
         return '{0}'.format(self.value)
 
+    def __repr__(self):
+        """
+        N.__repr__() <==> repr(N)
+
+        >>> node = Node('test')
+        >>> node.__repr__()
+        'test'
+        """
+        return self.__str__()
+
     def set_link(self, link):
         """
+        N.set_link(link) -- N.link = link
         >>> node_1 = Node('test')
         >>> node_2 = Node('spam')
         >>> node_1.set_link(node_2)
@@ -44,11 +71,19 @@ class Node(object):
 
 
 class List(object):
+    """
+    List() -> new empty List
+    List(iterable) -> new List initialized from iterable's items
+    """
 
+    PRINT_STR = 'linkedlist.List({0})'
+    step = 1
     length = 0
 
     def __init__(self, data=None):
         """
+        L.__init__(...) -- initialized object List
+
         >>> list_1 = List()
         >>> list_2 = List('test')
         >>> list_1.head, list_1.tail
@@ -56,15 +91,26 @@ class List(object):
         >>> isinstance(list_2.head, Node), isinstance(list_2.tail, Node)
         (True, True)
         >>> print(list_2.head)
+        t
+        >>> list_3 = List(['test'])
+        >>> print(list_3.head)
         test
+        >>> list_4 = List(list_2)
+        >>> len(list_4)
+        4
+        >>> print(list_4.tail)
+        t
+        >>> list_5 = List([])
+        >>> len(list_5)
+        0
         """
+        self.head = None
+        self.tail = self.head
         if data is None:
-            self.head = None
-            self.tail = self.head
-        # elif isinstance(data, list):
-        #     self.head = None
-        #     for element in data:
-        #         self.append(element)
+            pass
+        elif isiterable(data):
+            for element in data:
+                self.append(element)
         else:
             self.head = Node(data)
             self.tail = self.head
@@ -72,42 +118,145 @@ class List(object):
 
     def __len__(self):
         """
+        L.__len__() <==> len(L))
+
         >>> list_1 = List()
         >>> len(list_1)
         0
         >>> list_1 = List('test')
         >>> len(list_1)
-        1
+        4
         """
         return self.length
 
     def __iter__(self):
         """
+        L.__iter__() <==> iter(L)
+
         >>> list_1 = List('test')
         >>> it = iter(list_1)
         >>> isinstance(it, ListIter)
         True
         >>> it.next()
-        'test'
+        't'
         """
         return ListIter(self)
 
+    def __str__(self):
+        """
+        L.__str__() <==> str(L)
+
+        >>> list_1 = List(['test', 'spam', 'maps'])
+        >>> print(list_1)
+        linkedlist.List(['test', 'spam', 'maps'])
+        """
+        return self.PRINT_STR.format([item for item in self])
+
+    def __repr__(self):
+        """
+        L.__repr__() <==> repr(L))
+        >>> list_1 = List(['test', 'spam', 'maps'])
+        >>> print(list_1.__repr__())
+        linkedlist.List(['test', 'spam', 'maps'])
+        """
+        return self.__str__()
+
+    def insert(self, index, value):
+        """
+        L.insert(index, value) -- insert value before index
+
+            >>> list_1 = List()
+            >>> list_1.insert(1, 'test')
+            >>> list_1.get()
+            'test'
+            >>> list_1.insert(1, 'spam')
+            >>> list_1.get()
+            'test'
+            >>> list_1.head.value
+            'spam'
+            >>> list_1.insert(5, 'maps')
+            >>> list_1.get()
+            'maps'
+            >>> list_1.insert(3, 333)
+            >>> for item in list_1:  print(item)
+            spam
+            test
+            333
+            maps
+        """
+        # List index out of range
+        if index > self.length:
+            self.append(value)
+            return
+        # List has no items
+        if self.length == 0:
+            self.append(value)
+            return
+        # Insert item before one items
+        if index <= 1:
+            self.appstart(value)
+            return
+        # Decrement the index to insert at the position before the
+        # specified index
+        index -= 1
+        current = self.head
+        # decrement the index because current position is set to
+        # first item in the 'List'
+        index -= 1
+        for _ in range(index):
+            current = current.link
+        node = Node(value)
+        node.set_link(current.link)
+        current.set_link(node)
+        self.length += self.step
+
     def get(self):
         """
+        L.get() -> item -- return the last item on the L
+
         >>> list_1 = List('test')
         >>> list_1.get()
-        'test'
+        't'
         >>> list_1.append('spam')
         >>> list_1.get()
         'spam'
+        >>> list_2 = List()
+        >>> print(list_2.get())
+        None
         """
-        return self.tail.value
+        if self.tail:
+            return self.tail.value
+        else:
+            return self.tail
+
+    def appstart(self, element):
+        """
+        L.appstart(element) -- add element to start L
+
+        >>> list_1 = List()
+        >>> list_1.appstart('test')
+        >>> list_1.get()
+        'test'
+        >>> list_1.appstart('spam')
+        >>> for item in list_1: print(item)
+        spam
+        test
+        """
+        if self.length > 0:
+            node = Node(element)
+            node.set_link(self.head)
+            self.head = node
+            self.length += self.step
+        else:
+            self.append(element)
 
     def append(self, element):
         """
+        L.append(element) -- append element to end L
+
         >>> list_1 = List('test')
         >>> list_1.tail.value
-        'test'
+        't'
         >>> list_1.append('spam')
         >>> list_1.tail.value
         'spam'
@@ -119,21 +268,23 @@ class List(object):
             node = Node(element)
             self.tail.set_link(node)
             self.tail = node
-        self.length += 1
+        self.length += self.step
 
     def pop(self):
         """
+        L.pop() -> item -- remove and return the last item on the L
+
         >>> list_1 = List('test')
         >>> list_1.append('spam')
         >>> list_1.append('maps')
         >>> list_1.tail.value
         'maps'
         >>> len(list_1)
-        3
+        6
         >>> list_1.pop()
         'maps'
         >>> len(list_1)
-        2
+        5
         >>> list_1.tail.value
         'spam'
         """
@@ -143,16 +294,21 @@ class List(object):
         self.tail = node
         node = node.link
         self.tail.set_link(node)
-        self.length -= 1
+        self.length -= self.step
         return node.value
 
 
 class ListIter(object):
+    """
+    ListIter(obj) -> new ListIter initialized
+    """
 
     current = None
 
     def __init__(self, obj):
         """
+        LI.__init__(obj) -- initialized object ListIter
+
         >>> it = ListIter(List('test'))
         >>> isinstance(it.obj, List)
         True
@@ -164,6 +320,8 @@ class ListIter(object):
 
     def __iter__(self):
         """
+        LI.__iter__() <==> iter(LI)
+
         >>> list_1 = List('test')
         >>> it = iter(list_1)
         >>> isinstance(it, ListIter)
