@@ -27,6 +27,9 @@ class TestClass(object):
         self.list_1 = ll.List([])
         # --- List->__init__(value) ---
         # --- List->get ---
+        # assert isinstance(self.list_1.get(), None)
+        assert self.list_1.get() is None
+        self.list_1 = ll.List([[]])
         assert isinstance(self.list_1.get(), list)
         assert self.list_1.get() == []
         # --- List->append ---
@@ -41,11 +44,23 @@ class TestClass(object):
         self.list_1.append(333)
         assert isinstance(self.list_1.get(), int)
         assert self.list_1.get() == 333
+        # --- List->appstart ---
+        self.list_1.appstart(222)
+        assert self.list_1.head.value == 222
+        self.list_1.appstart('maps')
+        assert self.list_1.head.value == 'maps'
+        # --- List->insert ---
+        self.list_1.insert(3, 'spam')
+        self.list_1.insert(0, 'flood')
+        assert self.list_1.head.value == 'flood'
+        self.list_1.insert(10, 'food')
+        assert self.list_1.get() == 'food'
+        assert len(self.list_1) == 9
         # --- List->pop ---
+        assert self.list_1.pop() == 'food'
         assert self.list_1.pop() == 333
-        assert self.list_1.pop() == {}
         # --- List->__len__ ---
-        assert len(self.list_1) == 2
+        assert len(self.list_1) == 7
 
     def test_listiter(self):
         self.list_1 = ll.List('test')
@@ -56,6 +71,9 @@ class TestClass(object):
         self.it = iter(self.list_1)
         assert isinstance(self.it, ll.ListIter)
         # --- ListIter->next ---
+        assert isinstance(self.it.next(), str)
+        assert isinstance(self.it.next(), str)
+        assert isinstance(self.it.next(), str)
         assert isinstance(self.it.next(), str)
         assert isinstance(self.it.next(), int)
         assert isinstance(self.it.next(), list)
