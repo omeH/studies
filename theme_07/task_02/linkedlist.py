@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
 """
 File: linkedlist.py
 Author: omeH
@@ -161,6 +163,15 @@ class List(object):
         """
         return self.__str__()
 
+    def __eq__(self, other):
+        return self.__str__() == other.__str__()
+
+    def __ne__(self, other):
+        return self.__str__() != other.__str__()
+
+    def __hash__(self):
+        return hash(self.__repr__())
+
     def insert(self, index, value):
         """
         L.insert(index, value) -- insert value before index
@@ -184,6 +195,9 @@ class List(object):
             333
             maps
         """
+        if index < 0:
+            index = self.length + index
+            index += 1
         # List index out of range
         if index > self.length:
             self.append(value)
@@ -194,7 +208,7 @@ class List(object):
             return
         # Insert item before one items
         if index <= 1:
-            self.appstart(value)
+            self._appstart(value)
             return
         # Decrement the index to insert at the position before the
         # specified index
@@ -229,15 +243,15 @@ class List(object):
         else:
             return self.tail
 
-    def appstart(self, element):
+    def _appstart(self, element):
         """
-        L.appstart(element) -- add element to start L
+        L._appstart(element) -- add element to start L
 
         >>> list_1 = List()
-        >>> list_1.appstart('test')
+        >>> list_1._appstart('test')
         >>> list_1.get()
         'test'
-        >>> list_1.appstart('spam')
+        >>> list_1._appstart('spam')
         >>> for item in list_1: print(item)
         spam
         test
@@ -288,14 +302,20 @@ class List(object):
         >>> list_1.tail.value
         'spam'
         """
-        node = self.head
-        while node.link != self.tail:
-            node = node.link
-        self.tail = node
-        node = node.link
-        self.tail.set_link(node)
+        if self.length == 0:
+            raise IndexError('pop from empty List')
+        if self.length == 1:
+            head, self.head = self.head, None
+            self.length -= self.step
+            return head
+        current = self.head
+        while current.link != self.tail:
+            current = current.link
+        self.tail = current
+        current = current.link
+        self.tail.set_link(None)
         self.length -= self.step
-        return node.value
+        return current.value
 
 
 class ListIter(object):

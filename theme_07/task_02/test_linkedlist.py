@@ -45,9 +45,9 @@ class TestClass(object):
         assert isinstance(self.list_1.get(), int)
         assert self.list_1.get() == 333
         # --- List->appstart ---
-        self.list_1.appstart(222)
+        self.list_1._appstart(222)
         assert self.list_1.head.value == 222
-        self.list_1.appstart('maps')
+        self.list_1._appstart('maps')
         assert self.list_1.head.value == 'maps'
         # --- List->insert ---
         self.list_1.insert(3, 'spam')
@@ -61,6 +61,28 @@ class TestClass(object):
         assert self.list_1.pop() == 333
         # --- List->__len__ ---
         assert len(self.list_1) == 7
+        self.list_2 = ll.List(['test'])
+        self.list_3 = ll.List(['test'])
+        assert self.list_2 == self.list_3
+        assert self.list_1 != self.list_2
+
+    def test_list_insert(self):
+        self.list_1 = ll.List(['test', 'spam', 'maps', 'food'])
+        self.list_1.insert(0, 'm1')
+        assert self.list_1.head.value == 'm1'
+        self.list_1.insert(1, 'm2')
+        assert self.list_1.head.value == 'm2'
+        self.list_1.insert(2, 'm3')
+        assert self.list_1.head.link.value == 'm3'
+        self.list_1.insert(10, 'm4')
+        assert self.list_1.get() == 'm4'
+        self.list_1.insert(-1, 'm5')
+        current = self.list_1.head
+        while current.link != self.list_1.tail:
+            current = current.link
+        assert current.value == 'm5'
+        self.list_1.insert(-9, 'm6')
+        assert self.list_1.head.value == 'm6'
 
     def test_listiter(self):
         self.list_1 = ll.List('test')
