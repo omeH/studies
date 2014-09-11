@@ -74,8 +74,8 @@ class Node(object):
 
 class List(object):
     """
-    List() -> new empty List
-    List(iterable) -> new List initialized from iterable's items
+    List() -> new empty List.
+    List(iterable) -> new List initialized from iterable's items.
     """
 
     PRINT_STR = 'linkedlist.List({0})'
@@ -84,7 +84,7 @@ class List(object):
 
     def __init__(self, data=None):
         """
-        L.__init__(...) -- initialized object List
+        L.__init__(...) -- initialized object List.
 
         >>> list_1 = List()
         >>> list_2 = List('test')
@@ -163,24 +163,91 @@ class List(object):
         """
         return self.__str__()
 
+    def __add__(self, item):
+        """
+        L.__add__(item) <==> L + item
+
+        >>> list_1 = List(['test'])
+        >>> list_1 + 'spam'
+        >>> list_1
+        linkedlist.List(['test', 'spam'])
+        """
+        self.append(item)
+
     def __eq__(self, other):
+        """
+        L.__eq__(Y) <==> L == Y
+
+        >>> list_1 = List('test')
+        >>> list_2 = List('test')
+        >>> list_1 == list_2
+        True
+        >>> list_1.remove('t')
+        >>> list_1 == list_2
+        False
+        """
         return self.__str__() == other.__str__()
 
     def __ne__(self, other):
+        """
+        L.__ne__(Y) <==> L != Y
+
+        >>> list_1 = List('test')
+        >>> list_2 = List('test')
+        >>> list_1 != list_2
+        False
+        >>> list_1.remove('t')
+        >>> list_1 != list_2
+        True
+        """
         return self.__str__() != other.__str__()
 
     def __hash__(self):
+        """
+        L.__hash__() <==> hash(L)
+
+        >>> list_1 = List('test')
+        >>> hash(list_1)
+        1098142395
+        """
         return hash(self.__repr__())
+
+    def __getitem__(self, index):
+        """
+        L.__getitem__(index) <==> L[index]
+
+        >>> list_1 = List('test')
+        >>> list_1[0], list_1[1], list_1[2], list_1[3]
+        ('t', 'e', 's', 't')
+        >>> list_1[-1], list_1[-2], list_1[-3],list_1[-4]
+        ('t', 's', 'e', 't')
+        >>> list_1[10]
+        Traceback (most recent call last):
+            ...
+        IndexError: List index out of range
+        """
+        return self.item(index)
+
+    def __delitem__(self, item):
+        """
+        L.__delitem__(index) <==> del L[index]
+
+        >>> list_1 = List('test')
+        >>> del list_1[1]
+        >>> list_1
+        linkedlist.List(['t', 's', 't'])
+        """
+        self.remove(self.item(item))
 
     def insert(self, index, value):
         """
-        L.insert(index, value) -- insert value before index
+        L.insert(index, value) -- insert value before index.
 
             >>> list_1 = List()
             >>> list_1.insert(1, 'test')
             >>> list_1.get()
             'test'
-            >>> list_1.insert(1, 'spam')
+            >>> list_1.insert(0, 'spam')
             >>> list_1.get()
             'test'
             >>> list_1.head.value
@@ -188,16 +255,16 @@ class List(object):
             >>> list_1.insert(5, 'maps')
             >>> list_1.get()
             'maps'
-            >>> list_1.insert(3, 333)
+            >>> list_1.insert(2, 333)
             >>> for item in list_1:  print(item)
             spam
             test
             333
             maps
         """
+        # Transform the negative intro a positive index
         if index < 0:
             index = self.length + index
-            index += 1
         # List index out of range
         if index > self.length:
             self.append(value)
@@ -207,16 +274,13 @@ class List(object):
             self.append(value)
             return
         # Insert item before one items
-        if index <= 1:
+        if index == 0:
             self._appstart(value)
             return
-        # Decrement the index to insert at the position before the
-        # specified index
-        index -= 1
         current = self.head
         # decrement the index because current position is set to
         # first item in the 'List'
-        index -= 1
+        index -= self.step
         for _ in range(index):
             current = current.link
         node = Node(value)
@@ -224,9 +288,45 @@ class List(object):
         current.set_link(node)
         self.length += self.step
 
+    def remove(self, item):
+        """
+        L.remove(item) -- remove first occurrence item.
+        Raises ValueError if item in not present.
+
+        >>> list_1 = List('teslo')
+        >>> list_1.remove('t')
+        >>> list_1
+        linkedlist.List(['e', 's', 'l', 'o'])
+        >>> list_1.remove('o')
+        >>> list_1
+        linkedlist.List(['e', 's', 'l'])
+        >>> list_1.remove('s')
+        >>> list_1
+        linkedlist.List(['e', 'l'])
+        >>> list_1.remove('t')
+        Traceback (most recent call last):
+            ...
+        ValueError: List.remove(x): x not in List
+        """
+        if item == self.head.value:
+            self.head = self.head.link
+            self.length -= self.step
+            return
+        previous = None
+        current = self.head
+        while item != current.value:
+            previous = current
+            current = current.link
+            if current is None:
+                break
+        if current is None:
+            raise ValueError('List.remove(x): x not in List')
+        previous.set_link(current.link)
+
     def get(self):
         """
-        L.get() -> item -- return the last item on the L
+        L.get() -> item -- return the last item on the L.
+        Raises ValueError if empty L.
 
         >>> list_1 = List('test')
         >>> list_1.get()
@@ -235,17 +335,58 @@ class List(object):
         >>> list_1.get()
         'spam'
         >>> list_2 = List()
-        >>> print(list_2.get())
-        None
+        >>> list_2.get()
+        Traceback (most recent call last):
+            ...
+        ValueError: get from empty List
         """
-        if self.tail:
+        if self.length == 0:
+            print(self.length)
+            raise ValueError('get from empty List')
+        return self.tail.value
+
+    def item(self, index):
+        """
+        L.item(index) -> item -- returns the item found at index.
+        Raises IndexError if item not found.
+        >>> list_1 = List(['test', 'spam', 'maps'])
+        >>> list_1.item(0)
+        'test'
+        >>> list_1.item(1)
+        'spam'
+        >>> list_1.item(10)
+        Traceback (most recent call last):
+            ...
+        IndexError: List index out of range
+        >>> list_1.item(-1)
+        'maps'
+        >>> list_1.item(-10)
+        Traceback (most recent call last):
+            ...
+        IndexError: List index out of range
+        """
+        if self.length == 0:
+            raise IndexError('item from empty List')
+        if index < 0:
+            index = self.length + index
+            # index += self.step
+        if index == 0:
+            return self.head.value
+        if index > self.length - 1 or index < 0:
+            raise IndexError('List index out of range')
+        if index == self.length - 1:
             return self.tail.value
-        else:
-            return self.tail
+        current = self.head
+        # decrement the index because current position is set to
+        # first item in the 'List'
+        # index -= self.step
+        for _ in range(index):
+            current = current.link
+        return current.value
 
     def _appstart(self, element):
         """
-        L._appstart(element) -- add element to start L
+        L._appstart(element) -- add element to start L.
 
         >>> list_1 = List()
         >>> list_1._appstart('test')
@@ -266,7 +407,7 @@ class List(object):
 
     def append(self, element):
         """
-        L.append(element) -- append element to end L
+        L.append(element) -- append element to end L.
 
         >>> list_1 = List('test')
         >>> list_1.tail.value
@@ -286,7 +427,8 @@ class List(object):
 
     def pop(self):
         """
-        L.pop() -> item -- remove and return the last item on the L
+        L.pop() -> item -- remove and return the last item on the L.
+        Raises IndexError if empty List.
 
         >>> list_1 = List('test')
         >>> list_1.append('spam')
