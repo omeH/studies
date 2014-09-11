@@ -8,8 +8,8 @@ class TestClass(object):
 
     def setup_method(self, method):
         # linkedlist.Node
-        self.node_1 = ll.Node('test')
-        self.node_2 = ll.Node('spam')
+        self.node_1 = ll._Node('test')
+        self.node_2 = ll._Node('spam')
         # linkedlist.List
         self.items = ['test', 'spam', 'maps', 'food']
         self.list_1 = ll.List(self.items)
@@ -82,10 +82,12 @@ class TestClass(object):
         assert list_5.tail.link is None
         # ---------- #
         items = {'test': None, 'spam': None, 'maps': None, 'food': None}
-        list_6 = ll.List(self.list_1)
-        assert list_6.head.value == 'test'
-        assert list_6.tail.value == 'food'
-        assert list_6.length == len(self.items)
+        list_6 = ll.List(items)
+        assert 'test' in list_6
+        assert 'food' in list_6
+        assert 'spam' in list_6
+        assert 'maps' in list_6
+        assert list_6.length == len(items)
         assert list_6.head.link is not None
         assert list_6.tail.link is None
 
@@ -99,13 +101,13 @@ class TestClass(object):
         assert len(self.list_3) == 0
 
     def test_list_iter(self):
-        assert isinstance(self.list_1.__iter__(), ll.ListIter)
-        assert isinstance(self.list_2.__iter__(), ll.ListIter)
-        assert isinstance(self.list_3.__iter__(), ll.ListIter)
+        assert isinstance(self.list_1.__iter__(), ll._ListIter)
+        assert isinstance(self.list_2.__iter__(), ll._ListIter)
+        assert isinstance(self.list_3.__iter__(), ll._ListIter)
         # <<<<<>>>>> #
-        assert isinstance(iter(self.list_1), ll.ListIter)
-        assert isinstance(iter(self.list_2), ll.ListIter)
-        assert isinstance(iter(self.list_3), ll.ListIter)
+        assert isinstance(iter(self.list_1), ll._ListIter)
+        assert isinstance(iter(self.list_2), ll._ListIter)
+        assert isinstance(iter(self.list_3), ll._ListIter)
 
     def test_list_str(self):
         str_1 = 'linkedlist.List({0})'.format(self.items)
@@ -134,67 +136,76 @@ class TestClass(object):
         assert repr(self.list_3) == str_3
 
     def test_list_add(self):
-        self.list_1.__add__(self.item)
-        assert self.list_1.tail.value == self.item
-        assert len(self.list_1) == len(self.items) + 1
+        list_4 = self.list_1.__add__(self.list_1)
+        assert len(list_4) == len(self.list_1) + len(self.list_1)
         # ---------- #
-        self.list_2.__add__(self.item * 4)
-        assert self.list_2.tail.value == self.item * 4
-        assert len(self.list_2) == 2
+        list_5 = self.list_2.__add__(self.list_2)
+        assert len(list_5) == 2
         # ---------- #
-        self.list_3.__add__(self.item)
-        assert self.list_3.tail.value == self.item
-        assert len(self.list_3) == 1
+        list_6 = self.list_3.__add__(self.list_3)
+        assert len(list_6) == 0
+        # ---------- #
+        with pytest.raises(TypeError):
+            self.list_1.__add__('test')
         # <<<<<>>>>> #
-        self.list_1 + self.item * 4
-        assert self.list_1.tail.value == self.item * 4
-        assert len(self.list_1) == len(self.items) + 2
+        list_4 = self.list_1 + self.list_1
+        assert len(list_4) == len(self.list_1) + len(self.list_1)
         # ---------- #
-        self.list_2 + self.item * 5
-        assert self.list_2.tail.value == self.item * 5
-        assert len(self.list_2) == 3
+        list_5 = self.list_2 + self.list_2
+        assert len(list_5) == 2
         # ---------- #
-        self.list_3 + self.item * 5
-        assert self.list_3.tail.value == self.item * 5
-        assert len(self.list_3) == 2
+        list_6 = self.list_3 + self.list_3
+        assert len(list_6) == 0
+        # ---------- #
+        with pytest.raises(TypeError):
+            self.list_1 + 'test'
+
+    def test_list_cmp(self):
+        assert self.list_1.__cmp__(self.list_1) == 0
+        assert self.list_1.__cmp__(self.list_2) == 1
+        assert self.list_2.__cmp__(self.list_1) == -1
+
+        list_4 = ll.List([1, 2, 3, 4])
+        list_5 = ll.List([1, 2, 3])
+        assert list_4.__cmp__(list_5) == 1
 
     def test_list_eq(self):
-        assert self.list_1.__eq__(ll.List(self.items)) == True
-        assert self.list_1.__eq__(ll.List(self.item)) == False
+        assert self.list_1.__eq__(ll.List(self.items)) is True
+        assert self.list_1.__eq__(ll.List(self.item)) is False
         # ---------- #
-        assert self.list_2.__eq__(ll.List(self.item)) == True
-        assert self.list_2.__eq__(ll.List(self.items)) == False
+        assert self.list_2.__eq__(ll.List(self.item)) is True
+        assert self.list_2.__eq__(ll.List(self.items)) is False
         # ---------- #
-        assert self.list_3.__eq__(ll.List()) == True
-        assert self.list_3.__eq__(ll.List(self.item)) == False
+        assert self.list_3.__eq__(ll.List()) is True
+        assert self.list_3.__eq__(ll.List(self.item)) is False
         # <<<<<>>>>> #
-        assert (self.list_1 == ll.List(self.items)) == True
-        assert (self.list_1 == ll.List(self.item)) == False
+        assert (self.list_1 == ll.List(self.items)) is True
+        assert (self.list_1 == ll.List(self.item)) is False
         # ---------- #
-        assert (self.list_2 == ll.List(self.item)) == True
-        assert (self.list_2 == ll.List(self.items)) == False
+        assert (self.list_2 == ll.List(self.item)) is True
+        assert (self.list_2 == ll.List(self.items)) is False
         # ---------- #
-        assert (self.list_3 == ll.List()) == True
-        assert (self.list_3 == ll.List(self.item)) == False
+        assert (self.list_3 == ll.List()) is True
+        assert (self.list_3 == ll.List(self.item)) is False
 
     def test_list_ne(self):
-        assert self.list_1.__ne__(ll.List(self.item)) == True
-        assert self.list_1.__ne__(ll.List(self.items)) == False
+        assert self.list_1.__ne__(ll.List(self.item)) is True
+        assert self.list_1.__ne__(ll.List(self.items)) is False
         # ---------- #
-        assert self.list_2.__ne__(ll.List(self.items)) == True
-        assert self.list_2.__ne__(ll.List(self.item)) == False
+        assert self.list_2.__ne__(ll.List(self.items)) is True
+        assert self.list_2.__ne__(ll.List(self.item)) is False
         # ---------- #
-        assert self.list_3.__ne__(ll.List(self.item)) == True
-        assert self.list_3.__ne__(ll.List()) == False
+        assert self.list_3.__ne__(ll.List(self.item)) is True
+        assert self.list_3.__ne__(ll.List()) is False
         # <<<<<>>>>> #
-        assert (self.list_1 != ll.List(self.item)) == True
-        assert (self.list_1 != ll.List(self.items)) == False
+        assert (self.list_1 != ll.List(self.item)) is True
+        assert (self.list_1 != ll.List(self.items)) is False
         # ---------- #
-        assert (self.list_2 != ll.List(self.items)) == True
-        assert (self.list_2 != ll.List(self.item)) == False
+        assert (self.list_2 != ll.List(self.items)) is True
+        assert (self.list_2 != ll.List(self.item)) is False
         # ---------- #
-        assert (self.list_3 != ll.List(self.item)) == True
-        assert (self.list_3 != ll.List()) == False
+        assert (self.list_3 != ll.List(self.item)) is True
+        assert (self.list_3 != ll.List()) is False
 
     def test_list_getitem(self):
         assert self.list_1[0] == 'test'
@@ -330,7 +341,7 @@ class TestClass(object):
         # --- List->__iter__ ---
         # --- ListIter->__init__ ---
         self.it = iter(self.list_1)
-        assert isinstance(self.it, ll.ListIter)
+        assert isinstance(self.it, ll._ListIter)
         # --- ListIter->next ---
         assert isinstance(self.it.next(), str)
         assert isinstance(self.it.next(), str)

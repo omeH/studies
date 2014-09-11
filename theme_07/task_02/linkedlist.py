@@ -57,6 +57,11 @@ class _Node(object):
         """
         return self.__str__()
 
+    def __cmp__(self, other):
+        if isinstance(other, _Node):
+            return cmp(self.value, other.value)
+        return cmp(self.value, other)
+
     def set_link(self, link):
         """
         N.set_link(link) -- N.link = link
@@ -79,6 +84,9 @@ class List(object):
     """
 
     PRINT_STR = 'linkedlist.List({0})'
+    CMP_NEGATIVE = -1
+    CMP_ZERO = 0
+    CMP_POSITIVE = 1
     step = 1
     length = 0
 
@@ -163,7 +171,7 @@ class List(object):
         """
         return self.__str__()
 
-    def __add__(self, obj):
+    def __add__(self, other):
         """
         L.__add__(item) <==> L + item
 
@@ -178,12 +186,69 @@ class List(object):
             ...
         TypeError: can only concatenate List to List
         """
-        if not isinstance(obj, List):
+        if not isinstance(other, List):
             raise TypeError('can only concatenate List to List')
         result = List(self)
-        for item in obj:
+        for item in other:
             result.append(item)
         return result
+
+    def __iadd__(self, other):
+        """
+        L.__iadd__(Y) <==> L += Y
+
+        >>> list_1 = List(['test', 'spam'])
+        >>> list_2 = List(['maps', 'food'])
+        >>> list_1 += list_2
+        >>> list_1
+        linkedlist.List(['test', 'spam', 'maps', 'food'])
+        """
+        for item in other:
+            self.append(item)
+        return self
+
+    def __cmp__(self, other):
+        """
+        L.__cmp__(Y) -> integer <==> cmp(L, Y)
+        return negative if L<Y, zero if L=Y, positive if L>Y.
+        """
+        if not isinstance(other, List):
+            return cmp(self, other)
+        # Select master List which is less than the length.
+        # It is necessary that would  not out of range of one
+        # of them. Variable 'order' determines the pattern
+        # comparison: [self, other].
+        if cmp(self.length, other.length) == self.CMP_POSITIVE:
+            first_current = other.head
+            second_current = self.head
+            order = [second_current, first_current]
+        else:
+            first_current = self.head
+            second_current = other.head
+            order = [first_current, second_current]
+        # Cycle performs a search of the first inequality of
+        # Lists items.
+        while first_current is not None:
+            result = cmp(*order)
+            if result == self.CMP_NEGATIVE:
+                return self.CMP_NEGATIVE
+            elif result == self.CMP_POSITIVE:
+                return self.CMP_POSITIVE
+            else:
+                first_current = first_current.link
+                second_current = second_current.link
+        # If cycle performs is successful, it means that there
+        # may be three situations:
+        # 1) List are equal, if equal to the length;
+        # 2) self is less, if the length of the self is less
+        #    than the length of the other.
+        # 3) self is more, if the length of the self is more
+        #    than the length of the other.
+        if cmp(self.length, other.length) == self.CMP_ZERO:
+            return self.CMP_ZERO
+        elif cmp(self.length, other.length) == self.CMP_NEGATIVE:
+            return self.CMP_NEGATIVE
+        return self.CMP_POSITIVE
 
     def __eq__(self, other):
         """
@@ -197,7 +262,9 @@ class List(object):
         >>> list_1 == list_2
         False
         """
-        return self.__str__() == other.__str__()
+        if self.__cmp__(other) == self.CMP_ZERO:
+            return True
+        return False
 
     def __ne__(self, other):
         """
@@ -211,7 +278,29 @@ class List(object):
         >>> list_1 != list_2
         True
         """
-        return self.__str__() != other.__str__()
+        if self.__cmp__(other) != self.CMP_ZERO:
+            return True
+        return False
+
+    def __gt__(self, other):
+        if self.__cmp__(other) == self.CMP_POSITIVE:
+            return True
+        return False
+
+    def __lt__(self, other):
+        if self.__cmp__(other) == self.CMP_NEGATIVE:
+            return True
+        return False
+
+    def __ge__(self, other):
+        if self.__cmp__(other) != self.CMP_NEGATIVE:
+            return True
+        return False
+
+    def __le__(self, other):
+        if self.__cmp__(other) != self.CMP_POSITIVE:
+            return True
+        return False
 
     def __hash__(self):
         """
