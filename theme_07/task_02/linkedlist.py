@@ -18,7 +18,7 @@ def isiterable(p_object):
         return True
 
 
-class Node(object):
+class _Node(object):
     """
     Node(value) -> new Node initialized
     """
@@ -30,8 +30,8 @@ class Node(object):
         """
         N.__init__(value) -- initialized object Node
 
-        >>> node_1 = Node('test')
-        >>> node_2 = Node('spam')
+        >>> node_1 = _Node('test')
+        >>> node_2 = _Node('spam')
         >>> node_1.value, node_2.value
         ('test', 'spam')
         """
@@ -41,7 +41,7 @@ class Node(object):
         """
         N.__str__() <==> str(N)
 
-        >>> node = Node('test')
+        >>> node = _Node('test')
         >>> print(node)
         test
         """
@@ -51,7 +51,7 @@ class Node(object):
         """
         N.__repr__() <==> repr(N)
 
-        >>> node = Node('test')
+        >>> node = _Node('test')
         >>> node.__repr__()
         'test'
         """
@@ -60,8 +60,8 @@ class Node(object):
     def set_link(self, link):
         """
         N.set_link(link) -- N.link = link
-        >>> node_1 = Node('test')
-        >>> node_2 = Node('spam')
+        >>> node_1 = _Node('test')
+        >>> node_2 = _Node('spam')
         >>> node_1.set_link(node_2)
         >>> node_2.set_link(node_1)
         >>> node_1.link is node_2
@@ -90,7 +90,7 @@ class List(object):
         >>> list_2 = List('test')
         >>> list_1.head, list_1.tail
         (None, None)
-        >>> isinstance(list_2.head, Node), isinstance(list_2.tail, Node)
+        >>> isinstance(list_2.head, _Node), isinstance(list_2.tail, _Node)
         (True, True)
         >>> print(list_2.head)
         t
@@ -114,7 +114,7 @@ class List(object):
             for element in data:
                 self.append(element)
         else:
-            self.head = Node(data)
+            self.head = _Node(data)
             self.tail = self.head
             self.length = 1
 
@@ -137,12 +137,12 @@ class List(object):
 
         >>> list_1 = List('test')
         >>> it = iter(list_1)
-        >>> isinstance(it, ListIter)
+        >>> isinstance(it, _ListIter)
         True
         >>> it.next()
         't'
         """
-        return ListIter(self)
+        return _ListIter(self)
 
     def __str__(self):
         """
@@ -163,16 +163,27 @@ class List(object):
         """
         return self.__str__()
 
-    def __add__(self, item):
+    def __add__(self, obj):
         """
         L.__add__(item) <==> L + item
 
-        >>> list_1 = List(['test'])
-        >>> list_1 + 'spam'
+        >>> list_1 = List(['test', 'maps'])
+        >>> list_2 = List(['spam', 'food'])
+        >>> list_1 + list_2
+        linkedlist.List(['test', 'maps', 'spam', 'food'])
         >>> list_1
-        linkedlist.List(['test', 'spam'])
+        linkedlist.List(['test', 'maps'])
+        >>> list_1 + 'test'
+        Traceback (most recent call last):
+            ...
+        TypeError: can only concatenate List to List
         """
-        self.append(item)
+        if not isinstance(obj, List):
+            raise TypeError('can only concatenate List to List')
+        result = List(self)
+        for item in obj:
+            result.append(item)
+        return result
 
     def __eq__(self, other):
         """
@@ -226,7 +237,7 @@ class List(object):
             ...
         IndexError: List index out of range
         """
-        return self.item(index)
+        return self._item(index)
 
     def __delitem__(self, index):
         """
@@ -237,7 +248,7 @@ class List(object):
         >>> list_1
         linkedlist.List(['t', 's', 't'])
         """
-        self.remove(self.item(index))
+        self.remove(self._item(index))
 
     def insert(self, index, value):
         """
@@ -283,7 +294,7 @@ class List(object):
         index -= self.step
         for _ in range(index):
             current = current.link
-        node = Node(value)
+        node = _Node(value)
         node.set_link(current.link)
         current.set_link(node)
         self.length += self.step
@@ -346,22 +357,22 @@ class List(object):
             raise ValueError('get from empty List')
         return self.tail.value
 
-    def item(self, index):
+    def _item(self, index):
         """
         L.item(index) -> item -- returns the item found at index.
         Raises IndexError if item not found.
         >>> list_1 = List(['test', 'spam', 'maps'])
-        >>> list_1.item(0)
+        >>> list_1._item(0)
         'test'
-        >>> list_1.item(1)
+        >>> list_1._item(1)
         'spam'
-        >>> list_1.item(10)
+        >>> list_1._item(10)
         Traceback (most recent call last):
             ...
         IndexError: List index out of range
-        >>> list_1.item(-1)
+        >>> list_1._item(-1)
         'maps'
-        >>> list_1.item(-10)
+        >>> list_1._item(-10)
         Traceback (most recent call last):
             ...
         IndexError: List index out of range
@@ -399,7 +410,7 @@ class List(object):
         test
         """
         if self.length > 0:
-            node = Node(element)
+            node = _Node(element)
             node.set_link(self.head)
             self.head = node
             self.length += self.step
@@ -418,13 +429,27 @@ class List(object):
         'spam'
         """
         if self.head is None:
-            self.head = Node(element)
+            self.head = _Node(element)
             self.tail = self.head
         else:
-            node = Node(element)
+            node = _Node(element)
             self.tail.set_link(node)
             self.tail = node
         self.length += self.step
+
+    def extend(self, iterable):
+        """
+        L.extend(iterable) -- extend List by appending elements from
+        the iterable.
+
+        >>> list_1 = List(['test', 'spam'])
+        >>> list_2 = List(['maps', 'food'])
+        >>> list_1.extend(list_2)
+        >>> list_1
+        linkedlist.List(['test', 'spam', 'maps', 'food'])
+        """
+        for item in iterable:
+            self.append(item)
 
     def pop(self):
         """
@@ -461,7 +486,7 @@ class List(object):
         return current.value
 
 
-class ListIter(object):
+class _ListIter(object):
     """
     ListIter(obj) -> new ListIter initialized
     """
@@ -472,10 +497,10 @@ class ListIter(object):
         """
         LI.__init__(obj) -- initialized object ListIter
 
-        >>> it = ListIter(List('test'))
+        >>> it = _ListIter(List('test'))
         >>> isinstance(it.obj, List)
         True
-        >>> isinstance(it.current, Node)
+        >>> isinstance(it.current, _Node)
         True
         """
         self.obj = obj
@@ -487,7 +512,7 @@ class ListIter(object):
 
         >>> list_1 = List('test')
         >>> it = iter(list_1)
-        >>> isinstance(it, ListIter)
+        >>> isinstance(it, _ListIter)
         True
         """
         return self
