@@ -228,7 +228,7 @@ class List(object):
         """
         return self.item(index)
 
-    def __delitem__(self, item):
+    def __delitem__(self, index):
         """
         L.__delitem__(index) <==> del L[index]
 
@@ -237,7 +237,7 @@ class List(object):
         >>> list_1
         linkedlist.List(['t', 's', 't'])
         """
-        self.remove(self.item(item))
+        self.remove(self.item(index))
 
     def insert(self, index, value):
         """
@@ -322,6 +322,7 @@ class List(object):
         if current is None:
             raise ValueError('List.remove(x): x not in List')
         previous.set_link(current.link)
+        self.length -= self.step
 
     def get(self):
         """

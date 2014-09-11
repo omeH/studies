@@ -1,3 +1,4 @@
+import copy
 import pytest
 
 import linkedlist as ll
@@ -5,19 +6,259 @@ import linkedlist as ll
 
 class TestClass(object):
 
-    def test_node(self):
+    def setup_method(self, method):
+        # linkedlist.Node
         self.node_1 = ll.Node('test')
-        # --- Node->__init__ ---
-        assert isinstance(self.node_1, ll.Node)
-        assert self.node_1.value == 'test'
-        # --- Node->__str__ ---
-        assert str(self.node_1) == 'test'
         self.node_2 = ll.Node('spam')
+        # linkedlist.List
+        self.items = ['test', 'spam', 'maps', 'food']
+        self.list_1 = ll.List(self.items)
+        self.item = 333
+        self.list_2 = ll.List(self.item)
+        self.list_3 = ll.List()
+
+    ###################################
+    # Tests for class linkedlist.Node #
+    ###################################
+
+    def test_node_init(self):
+        assert self.node_1.value == 'test'
+        assert self.node_1.link is None
+
+    def test_node_str(self):
+        assert self.node_1.__str__() == 'test'
+        assert self.node_2.__str__() == 'spam'
+        # <<<<<>>>>> #
+        assert str(self.node_1) == 'test'
+        assert str(self.node_2) == 'spam'
+
+    def test_node_repr(self):
+        assert self.node_1.__repr__() == 'test'
+        assert self.node_2.__repr__() == 'spam'
+        # <<<<<>>>>> #
+        assert repr(self.node_1) == 'test'
+        assert repr(self.node_2) == 'spam'
+
+    def test_node_set_link(self):
         self.node_1.set_link(self.node_2)
+        assert self.node_1.link == self.node_2
+        # ---------- #
         self.node_2.set_link(self.node_1)
-        # --- Node->set_link ---
-        assert self.node_1.link is self.node_2
-        assert self.node_2.link is self.node_1
+        assert self.node_2.link == self.node_1
+
+    ###################################
+    # Tests for class linkedlist.List #
+    ###################################
+
+    def test_list_init(self):
+        assert self.list_1.head.value == 'test'
+        assert self.list_1.tail.value == 'food'
+        assert self.list_1.length == len(self.items)
+        assert self.list_1.head.link is not None
+        assert self.list_1.tail.link is None
+        # ---------- #
+        assert self.list_2.head.value == self.item
+        assert self.list_2.tail.value == self.item
+        assert self.list_2.length == 1
+        assert self.list_2.head.link is None
+        assert self.list_2.tail.link is None
+        # ---------- #
+        assert self.list_3.head is None
+        assert self.list_3.tail is None
+        assert self.list_3.length == 0
+        # ---------- #
+        list_4 = ll.List(self.list_1)
+        assert list_4.head.value == 'test'
+        assert list_4.tail.value == 'food'
+        assert list_4.length == len(self.items)
+        assert list_4.head.link is not None
+        assert list_4.tail.link is None
+        # ---------- #
+        list_5 = ll.List(tuple(self.items))
+        assert list_5.head.value == 'test'
+        assert list_5.tail.value == 'food'
+        assert list_5.length == len(self.items)
+        assert list_5.head.link is not None
+        assert list_5.tail.link is None
+        # ---------- #
+        items = {'test': None, 'spam': None, 'maps': None, 'food': None}
+        list_6 = ll.List(self.list_1)
+        assert list_6.head.value == 'test'
+        assert list_6.tail.value == 'food'
+        assert list_6.length == len(self.items)
+        assert list_6.head.link is not None
+        assert list_6.tail.link is None
+
+    def test_list_len(self):
+        assert self.list_1.__len__() == len(self.items)
+        assert self.list_2.__len__() == 1
+        assert self.list_3.__len__() == 0
+        # <<<<<>>>>> #
+        assert len(self.list_1) == len(self.items)
+        assert len(self.list_2) == 1
+        assert len(self.list_3) == 0
+
+    def test_list_iter(self):
+        assert isinstance(self.list_1.__iter__(), ll.ListIter)
+        assert isinstance(self.list_2.__iter__(), ll.ListIter)
+        assert isinstance(self.list_3.__iter__(), ll.ListIter)
+        # <<<<<>>>>> #
+        assert isinstance(iter(self.list_1), ll.ListIter)
+        assert isinstance(iter(self.list_2), ll.ListIter)
+        assert isinstance(iter(self.list_3), ll.ListIter)
+
+    def test_list_str(self):
+        str_1 = 'linkedlist.List({0})'.format(self.items)
+        str_2 = 'linkedlist.List([{0}])'.format(self.item)
+        str_3 = 'linkedlist.List([])'
+        # <<<<<>>>>> #
+        assert self.list_1.__str__() == str_1
+        assert self.list_2.__str__() == str_2
+        assert self.list_3.__str__() == str_3
+        # <<<<<>>>>> #
+        assert str(self.list_1) == str_1
+        assert str(self.list_2) == str_2
+        assert str(self.list_3) == str_3
+
+    def test_list_repr(self):
+        str_1 = 'linkedlist.List({0})'.format(self.items)
+        str_2 = 'linkedlist.List([{0}])'.format(self.item)
+        str_3 = 'linkedlist.List([])'
+        # <<<<<>>>>> #
+        assert self.list_1.__repr__() == str_1
+        assert self.list_2.__repr__() == str_2
+        assert self.list_3.__repr__() == str_3
+        # <<<<<>>>>> #
+        assert repr(self.list_1) == str_1
+        assert repr(self.list_2) == str_2
+        assert repr(self.list_3) == str_3
+
+    def test_list_add(self):
+        self.list_1.__add__(self.item)
+        assert self.list_1.tail.value == self.item
+        assert len(self.list_1) == len(self.items) + 1
+        # ---------- #
+        self.list_2.__add__(self.item * 4)
+        assert self.list_2.tail.value == self.item * 4
+        assert len(self.list_2) == 2
+        # ---------- #
+        self.list_3.__add__(self.item)
+        assert self.list_3.tail.value == self.item
+        assert len(self.list_3) == 1
+        # <<<<<>>>>> #
+        self.list_1 + self.item * 4
+        assert self.list_1.tail.value == self.item * 4
+        assert len(self.list_1) == len(self.items) + 2
+        # ---------- #
+        self.list_2 + self.item * 5
+        assert self.list_2.tail.value == self.item * 5
+        assert len(self.list_2) == 3
+        # ---------- #
+        self.list_3 + self.item * 5
+        assert self.list_3.tail.value == self.item * 5
+        assert len(self.list_3) == 2
+
+    def test_list_eq(self):
+        assert self.list_1.__eq__(ll.List(self.items)) == True
+        assert self.list_1.__eq__(ll.List(self.item)) == False
+        # ---------- #
+        assert self.list_2.__eq__(ll.List(self.item)) == True
+        assert self.list_2.__eq__(ll.List(self.items)) == False
+        # ---------- #
+        assert self.list_3.__eq__(ll.List()) == True
+        assert self.list_3.__eq__(ll.List(self.item)) == False
+        # <<<<<>>>>> #
+        assert (self.list_1 == ll.List(self.items)) == True
+        assert (self.list_1 == ll.List(self.item)) == False
+        # ---------- #
+        assert (self.list_2 == ll.List(self.item)) == True
+        assert (self.list_2 == ll.List(self.items)) == False
+        # ---------- #
+        assert (self.list_3 == ll.List()) == True
+        assert (self.list_3 == ll.List(self.item)) == False
+
+    def test_list_ne(self):
+        assert self.list_1.__ne__(ll.List(self.item)) == True
+        assert self.list_1.__ne__(ll.List(self.items)) == False
+        # ---------- #
+        assert self.list_2.__ne__(ll.List(self.items)) == True
+        assert self.list_2.__ne__(ll.List(self.item)) == False
+        # ---------- #
+        assert self.list_3.__ne__(ll.List(self.item)) == True
+        assert self.list_3.__ne__(ll.List()) == False
+        # <<<<<>>>>> #
+        assert (self.list_1 != ll.List(self.item)) == True
+        assert (self.list_1 != ll.List(self.items)) == False
+        # ---------- #
+        assert (self.list_2 != ll.List(self.items)) == True
+        assert (self.list_2 != ll.List(self.item)) == False
+        # ---------- #
+        assert (self.list_3 != ll.List(self.item)) == True
+        assert (self.list_3 != ll.List()) == False
+
+    def test_list_getitem(self):
+        assert self.list_1[0] == 'test'
+        assert self.list_1[1] == 'spam'
+        assert self.list_1[2] == 'maps'
+        assert self.list_1[3] == 'food'
+        with pytest.raises(IndexError):
+            self.list_1[4]
+        # ---------- #
+        assert self.list_1[-1] == 'food'
+        assert self.list_1[-2] == 'maps'
+        assert self.list_1[-3] == 'spam'
+        assert self.list_1[-4] == 'test'
+        with pytest.raises(IndexError):
+            self.list_1[-5]
+
+    def test_list_delitem(self):
+        list_tmp = copy.deepcopy(self.list_1)
+        items_tmp = copy.deepcopy(self.items)
+        # <<<<<>>>>> #
+        list_tmp.__delitem__(0)
+        items_tmp.remove('test')
+        str_1 = 'linkedlist.List({0})'.format(items_tmp)
+        assert len(list_tmp) == len(items_tmp)
+        assert str(list_tmp) == str_1
+        # ---------- #
+        list_tmp.__delitem__(1)
+        items_tmp.remove('maps')
+        str_1 = 'linkedlist.List({0})'.format(items_tmp)
+        assert len(list_tmp) == len(items_tmp)
+        assert str(list_tmp) == str_1
+        # ---------- #
+        list_tmp.__delitem__(1)
+        items_tmp.remove('food')
+        str_1 = 'linkedlist.List({0})'.format(items_tmp)
+        assert len(list_tmp) == len(items_tmp)
+        assert str(list_tmp) == str_1
+        # ---------- #
+        with pytest.raises(IndexError):
+            list_tmp.__delitem__(1)
+        # <<<<<>>>>> #
+        list_tmp = copy.deepcopy(self.list_1)
+        items_tmp = copy.deepcopy(self.items)
+        # <<<<<>>>>> #
+        list_tmp.__delitem__(-4)
+        items_tmp.remove('test')
+        str_1 = 'linkedlist.List({0})'.format(items_tmp)
+        assert len(list_tmp) == len(items_tmp)
+        assert str(list_tmp) == str_1
+        # ---------- #
+        list_tmp.__delitem__(-2)
+        items_tmp.remove('maps')
+        str_1 = 'linkedlist.List({0})'.format(items_tmp)
+        assert len(list_tmp) == len(items_tmp)
+        assert str(list_tmp) == str_1
+        # ---------- #
+        list_tmp.__delitem__(-1)
+        items_tmp.remove('food')
+        str_1 = 'linkedlist.List({0})'.format(items_tmp)
+        assert len(list_tmp) == len(items_tmp)
+        assert str(list_tmp) == str_1
+        # ---------- #
+        with pytest.raises(IndexError):
+            list_tmp.__delitem__(-2)
 
     def test_list(self):
         self.list_1 = ll.List()
@@ -27,8 +268,8 @@ class TestClass(object):
         self.list_1 = ll.List([])
         # --- List->__init__(value) ---
         # --- List->get ---
-        # assert isinstance(self.list_1.get(), None)
-        assert self.list_1.get() is None
+        with pytest.raises(ValueError):
+            self.list_1.get()
         self.list_1 = ll.List([[]])
         assert isinstance(self.list_1.get(), list)
         assert self.list_1.get() == []
@@ -67,22 +308,20 @@ class TestClass(object):
         assert self.list_1 != self.list_2
 
     def test_list_insert(self):
-        self.list_1 = ll.List(['test', 'spam', 'maps', 'food'])
+        # self.list_1 = ll.List(['test', 'spam', 'maps', 'food'])
         self.list_1.insert(0, 'm1')
         assert self.list_1.head.value == 'm1'
         self.list_1.insert(1, 'm2')
-        assert self.list_1.head.value == 'm2'
-        self.list_1.insert(2, 'm3')
-        assert self.list_1.head.link.value == 'm3'
-        self.list_1.insert(10, 'm4')
-        assert self.list_1.get() == 'm4'
-        self.list_1.insert(-1, 'm5')
+        assert self.list_1.head.link.value == 'm2'
+        self.list_1.insert(10, 'm3')
+        assert self.list_1.get() == 'm3'
+        self.list_1.insert(-1, 'm4')
         current = self.list_1.head
         while current.link != self.list_1.tail:
             current = current.link
-        assert current.value == 'm5'
-        self.list_1.insert(-9, 'm6')
-        assert self.list_1.head.value == 'm6'
+        assert current.value == 'm4'
+        self.list_1.insert(-8, 'm5')
+        assert self.list_1.head.value == 'm5'
 
     def test_listiter(self):
         self.list_1 = ll.List('test')
