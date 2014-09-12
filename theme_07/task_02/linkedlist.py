@@ -203,7 +203,15 @@ class List(object):
         >>> list_1
         linkedlist.List(['test', 'spam', 'maps', 'food'])
         """
-        for item in other:
+        # Creating a new List is necessary in order to in the
+        # event of: L += L; was not triggered by an infinite
+        # cycle.
+        if self is other:
+            new  = List(other)
+        else:
+            new = other
+
+        for item in new:
             self.append(item)
         return self
 
@@ -211,9 +219,18 @@ class List(object):
         """
         L.__cmp__(Y) -> integer <==> cmp(L, Y)
         return negative if L<Y, zero if L=Y, positive if L>Y.
+
+        >>> list_1 = List('test')
+        >>> list_2 = List('spam')
+        >>> list_1.__cmp__(list_2)
+        1
+        >>> list_2.__cmp__(list_1)
+        -1
+        >>> list_1.__cmp__(list_1)
+        0
         """
         if not isinstance(other, List):
-            return cmp(self, other)
+            return cmp(hash(self), hash(other))
         # Select master List which is less than the length.
         # It is necessary that would  not out of range of one
         # of them. Variable 'order' determines the pattern
@@ -283,21 +300,69 @@ class List(object):
         return False
 
     def __gt__(self, other):
+        """
+        L.__gt__(Y) <==> L > Y
+
+        >>> list_1 = List('test')
+        >>> list_2 = List('test')
+        >>> list_1 > list_2
+        False
+        >>> list_2.remove('t')
+        >>> list_1 > list_2
+        True
+        """
         if self.__cmp__(other) == self.CMP_POSITIVE:
             return True
         return False
 
     def __lt__(self, other):
+        """
+        L.__lt__(Y) <==> L < Y
+
+        >>> list_1 = List('test')
+        >>> list_2 = List('test')
+        >>> list_1 < list_2
+        False
+        >>> list_1.remove('t')
+        >>> list_1 < list_2
+        True
+        """
         if self.__cmp__(other) == self.CMP_NEGATIVE:
             return True
         return False
 
     def __ge__(self, other):
+        """
+        L.__ge__(Y) <==> L >= Y
+
+        >>> list_1 = List('test')
+        >>> list_2 = List('test')
+        >>> list_1 >= list_2
+        True
+        >>> list_1.remove('t')
+        >>> list_1 >= list_2
+        False
+        >>> list_2 >= list_1
+        True
+        """
         if self.__cmp__(other) != self.CMP_NEGATIVE:
             return True
         return False
 
     def __le__(self, other):
+        """
+        L.__le__(Y) <==> L <= Y
+
+        >>> list_1 = List('test')
+        >>> list_2 = List('test')
+        >>> list_1 <= list_2
+        True
+        >>> list_1.remove('t')
+        >>> list_1 <= list_2
+        True
+        >>> list_2 <= list_1
+        False
+        """
         if self.__cmp__(other) != self.CMP_POSITIVE:
             return True
         return False
@@ -337,7 +402,30 @@ class List(object):
         >>> list_1
         linkedlist.List(['t', 's', 't'])
         """
-        self.remove(self._item(index))
+        if not isinstance(index, int) and not isinstance(index, long):
+            raise TypeError('List indices must be integers')
+
+        if self.length == 0:
+            raise IndexError('item from empty List')
+        # Transform the negative intro a positive index
+        if index < 0:
+            index = self.length + index
+
+        if index > self.length - 1 or index < 0:
+            raise IndexError('List index out of range')
+
+        if index == 0:
+            self.head = self.head.link
+            self.length -= self.step
+            return
+
+        previous = None
+        current = self.head
+        for _ in range(index):
+            previous = current
+            current = current.link
+        previous.set_link(current.link)
+        self.length -= self.step
 
     def insert(self, index, value):
         """
@@ -442,7 +530,6 @@ class List(object):
         ValueError: get from empty List
         """
         if self.length == 0:
-            print(self.length)
             raise ValueError('get from empty List')
         return self.tail.value
 
@@ -450,6 +537,7 @@ class List(object):
         """
         L.item(index) -> item -- returns the item found at index.
         Raises IndexError if item not found.
+        Raises TypeError if index is not integers.
         >>> list_1 = List(['test', 'spam', 'maps'])
         >>> list_1._item(0)
         'test'
@@ -465,7 +553,13 @@ class List(object):
         Traceback (most recent call last):
             ...
         IndexError: List index out of range
+        >>> list_1._item('1')
+        Traceback (most recent call last):
+            ...
+        TypeError: List indices must be integers
         """
+        if not isinstance(index, int) and not isinstance(index, long):
+            raise TypeError('List indices must be integers')
         if self.length == 0:
             raise IndexError('item from empty List')
         if index < 0:
