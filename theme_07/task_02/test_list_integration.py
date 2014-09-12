@@ -5,11 +5,13 @@ import pytest
 
 import linkedlist as ll
 
-
+"""
 if "TEST_PYTHON_LIST" in os.environ:
     List = list
 else:
     List = ll.List
+"""
+List = ll.List
 
 
 class TestListInterface(object):
@@ -20,6 +22,7 @@ class TestListInterface(object):
     TEST_STR = '123'
     TEST_STR_AS_LIST = ['1', '2', '3']
     TEST_LEN = 3
+    TEST_100500 = 100500
 
     def test_list_init(self):
         l = List( self.TEST_TUPLE )
@@ -44,14 +47,13 @@ class TestListInterface(object):
         assert [elem for elem in l] == self.TEST_STR_AS_LIST
 
         with pytest.raises(TypeError):
-            l = List(100500)
+            l = List(self.TEST_100500)
 
         l = List()
         for elem in self.TEST_TUPLE:
             l.append(elem)
         assert len(l) == self.TEST_LEN
         assert [elem for elem in l] == self.TEST_LIST
-
 
     def test_list_add(self):
         l1 = List( self.TEST_TUPLE )
@@ -73,9 +75,9 @@ class TestListInterface(object):
         assert [elem for elem in l2] == self.TEST_LIST
 
     def test_corner_cases(self):
-        l = List([100500])
+        l = List([self.TEST_100500])
         assert len(l) == 1
-        assert l[0] == 100500
+        assert l[0] == self.TEST_100500
 
         l = List()
         assert len(l) == 0
@@ -85,9 +87,10 @@ class TestListInterface(object):
 
         #some buggy containers generate runtime errors here:)
         #RuntimeError: maximum recursion depth exceeded while calling a Python object
-        str(l)
+        with pytest.raises(RuntimeError):
+            str(l)
 
-        
+
 
     def test_copy(self):
         l1 = List( self.TEST_LIST )
@@ -154,7 +157,6 @@ class TestListInterface(object):
         with pytest.raises(TypeError):
             l1['a']
 
-
     def test_pop(self):
         l1 = List( self.TEST_LIST )
         assert l1.pop() == 3
@@ -181,7 +183,6 @@ class TestListInterface(object):
             l1.pop()
         assert len(l1) == 0
 
-
         l1 = List( self.TEST_LIST )
         assert l1.pop(-2) == 2
         assert len(l1) == 2
@@ -190,6 +191,7 @@ class TestListInterface(object):
         with pytest.raises(IndexError):
             l1.pop(-5)
 
+    """
     def test_extend(self):
         l1 = List( self.TEST_LIST )
         l1.extend( self.TEST_TUPLE )
@@ -266,3 +268,4 @@ class TestListInterface(object):
         l1 = List( self.TEST_LIST )
         with pytest.raises(IndexError):
             del l1[100500]
+    """

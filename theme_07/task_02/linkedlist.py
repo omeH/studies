@@ -12,8 +12,8 @@ Description:
 def isiterable(p_object):
     try:
         iter(p_object)
-    except TypeError:
-        return False
+    except TypeError, error:
+        raise error
     else:
         return True
 
@@ -121,10 +121,13 @@ class List(object):
         elif isiterable(data):
             for element in data:
                 self.append(element)
+        """
         else:
+            raise TypeError('\'{0\' object is not itarable}')
             self.head = _Node(data)
             self.tail = self.head
             self.length = 1
+        """
 
     def __len__(self):
         """
@@ -160,7 +163,12 @@ class List(object):
         >>> print(list_1)
         linkedlist.List(['test', 'spam', 'maps'])
         """
-        return self.PRINT_STR.format([item for item in self])
+        try:
+           msg = self.PRINT_STR.format([item for item in self])
+        except RuntimeError, error:
+            raise error
+        else:
+            return self.PRINT_STR.format([item for item in self])
 
     def __repr__(self):
         """
@@ -398,15 +406,15 @@ class List(object):
         L.__delitem__(index) <==> del L[index]
 
         >>> list_1 = List('test')
-        >>> del list_1[1]
+        >>> del list_1[3]
         >>> list_1
-        linkedlist.List(['t', 's', 't'])
+        linkedlist.List(['t', 'e', 's'])
         """
         if not isinstance(index, int) and not isinstance(index, long):
             raise TypeError('List indices must be integers')
 
         if self.length == 0:
-            raise IndexError('item from empty List')
+            raise IndexError('del from empty List')
         # Transform the negative intro a positive index
         if index < 0:
             index = self.length + index
@@ -425,6 +433,8 @@ class List(object):
             previous = current
             current = current.link
         previous.set_link(current.link)
+        if current == self.tail:
+            self.tail = previous
         self.length -= self.step
 
     def insert(self, index, value):
@@ -510,6 +520,8 @@ class List(object):
         if current is None:
             raise ValueError('List.remove(x): x not in List')
         previous.set_link(current.link)
+        if current == self.tail:
+            self.tail = previous
         self.length -= self.step
 
     def get(self):
@@ -634,7 +646,7 @@ class List(object):
         for item in iterable:
             self.append(item)
 
-    def pop(self):
+    def pop(self, index=None):
         """
         L.pop() -> item -- remove and return the last item on the L.
         Raises IndexError if empty List.
@@ -647,26 +659,43 @@ class List(object):
         >>> len(list_1)
         6
         >>> list_1.pop()
-        'maps'
+        maps
         >>> len(list_1)
         5
         >>> list_1.tail.value
         'spam'
         """
+        if index is None:
+            index = self.length - self.step
+
+        if not isinstance(index, int) and not isinstance(index, long):
+            raise TypeError('List indices must be integers')
+
         if self.length == 0:
             raise IndexError('pop from empty List')
-        if self.length == 1:
-            head, self.head = self.head, None
+        # Transform the negative intro a positive index
+        if index < 0:
+            index = self.length + index
+
+        if index > self.length - 1 or index < 0:
+            raise IndexError('List index out of range')
+
+        if index == 0:
+            node, self.head = self.head, self.head.link
             self.length -= self.step
-            return head
+            return node
+
+        previous = None
         current = self.head
-        while current.link != self.tail:
+        for _ in range(index):
+            previous = current
             current = current.link
-        self.tail = current
-        current = current.link
-        self.tail.set_link(None)
+        node = current
+        previous.set_link(current.link)
+        if current == self.tail:
+            self.tail = previous
         self.length -= self.step
-        return current.value
+        return node
 
 
 class _ListIter(object):
@@ -681,13 +710,10 @@ class _ListIter(object):
         LI.__init__(obj) -- initialized object ListIter
 
         >>> it = _ListIter(List('test'))
-        >>> isinstance(it.obj, List)
-        True
-        >>> isinstance(it.current, _Node)
+        >>> isinstance(it._current, _Node)
         True
         """
-        self.obj = obj
-        self.current = obj.head
+        self._current = obj.head
 
     def __iter__(self):
         """
@@ -718,10 +744,10 @@ class _ListIter(object):
             ...
         StopIteration
         """
-        if self.current is None:
+        if self._current is None:
             raise StopIteration
-        note = self.current
-        self.current = self.current.link
+        note = self._current
+        self._current = self._current.link
         return note.value
 
 

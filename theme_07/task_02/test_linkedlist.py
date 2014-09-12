@@ -17,7 +17,7 @@ class TestClass(object):
         self.items = ['test', 'spam', 'maps', 'food']
         self.list_1 = ll.List(self.items)
         self.item = 333
-        self.list_2 = ll.List(self.item)
+        self.list_2 = ll.List([self.item])
         self.list_3 = ll.List()
 
     ###################################
@@ -237,122 +237,122 @@ class TestClass(object):
 
     def test_list_eq(self):
         assert self.list_1.__eq__(ll.List(self.items)) is True
-        assert self.list_1.__eq__(ll.List(self.item)) is False
+        assert self.list_1.__eq__(ll.List([self.item])) is False
         # ---------- #
-        assert self.list_2.__eq__(ll.List(self.item)) is True
+        assert self.list_2.__eq__(ll.List([self.item])) is True
         assert self.list_2.__eq__(ll.List(self.items)) is False
         # ---------- #
         assert self.list_3.__eq__(ll.List()) is True
-        assert self.list_3.__eq__(ll.List(self.item)) is False
+        assert self.list_3.__eq__(ll.List([self.item])) is False
         # <<<<<>>>>> #
         assert (self.list_1 == ll.List(self.items)) is True
-        assert (self.list_1 == ll.List(self.item)) is False
+        assert (self.list_1 == ll.List([self.item])) is False
         # ---------- #
-        assert (self.list_2 == ll.List(self.item)) is True
+        assert (self.list_2 == ll.List([self.item])) is True
         assert (self.list_2 == ll.List(self.items)) is False
         # ---------- #
         assert (self.list_3 == ll.List()) is True
-        assert (self.list_3 == ll.List(self.item)) is False
+        assert (self.list_3 == ll.List([self.item])) is False
 
     def test_list_ne(self):
-        assert self.list_1.__ne__(ll.List(self.item)) is True
+        assert self.list_1.__ne__(ll.List([self.item])) is True
         assert self.list_1.__ne__(ll.List(self.items)) is False
         # ---------- #
         assert self.list_2.__ne__(ll.List(self.items)) is True
-        assert self.list_2.__ne__(ll.List(self.item)) is False
+        assert self.list_2.__ne__(ll.List([self.item])) is False
         # ---------- #
-        assert self.list_3.__ne__(ll.List(self.item)) is True
+        assert self.list_3.__ne__(ll.List([self.item])) is True
         assert self.list_3.__ne__(ll.List()) is False
         # <<<<<>>>>> #
-        assert (self.list_1 != ll.List(self.item)) is True
+        assert (self.list_1 != ll.List([self.item])) is True
         assert (self.list_1 != ll.List(self.items)) is False
         # ---------- #
         assert (self.list_2 != ll.List(self.items)) is True
-        assert (self.list_2 != ll.List(self.item)) is False
+        assert (self.list_2 != ll.List([self.item])) is False
         # ---------- #
-        assert (self.list_3 != ll.List(self.item)) is True
+        assert (self.list_3 != ll.List([self.item])) is True
         assert (self.list_3 != ll.List()) is False
 
     def test_list_gt(self):
-        assert self.list_1.__gt__(ll.List(self.item)) is True
+        assert self.list_1.__gt__(ll.List([self.item])) is True
         assert self.list_1.__gt__(ll.List(self.items)) is False
         # ---------- #
         assert self.list_2.__gt__(ll.List()) is True
-        assert self.list_2.__gt__(ll.List(self.item)) is False
+        assert self.list_2.__gt__(ll.List([self.item])) is False
         # ---------- #
         assert self.list_3.__gt__(ll.List()) is False
         # <<<<<>>>>> #
-        assert (self.list_1 > ll.List(self.item)) is True
+        assert (self.list_1 > ll.List([self.item])) is True
         assert (self.list_1 > ll.List(self.items)) is False
         # ---------- #
         assert (self.list_2 > ll.List()) is True
-        assert (self.list_2 > ll.List(self.item)) is False
+        assert (self.list_2 > ll.List([self.item])) is False
         # ---------- #
         assert (self.list_3 > ll.List()) is False
 
     def test_list_lt(self):
-        assert self.list_1.__lt__(ll.List(self.item)) is False
+        assert self.list_1.__lt__(ll.List([self.item])) is False
         assert self.list_1.__lt__(ll.List(self.items * 2)) is True
         # ---------- #
         assert self.list_2.__lt__(ll.List(self.items)) is True
-        assert self.list_2.__lt__(ll.List(self.item)) is False
+        assert self.list_2.__lt__(ll.List([self.item])) is False
         # ---------- #
-        assert self.list_3.__lt__(ll.List(self.item)) is True
+        assert self.list_3.__lt__(ll.List([self.item])) is True
         assert self.list_3.__lt__(ll.List()) is False
         # <<<<<>>>>> #
-        assert (self.list_1 < ll.List(self.item)) is False
+        assert (self.list_1 < ll.List([self.item])) is False
         assert (self.list_1 < ll.List(self.items * 2)) is True
         # ---------- #
         assert (self.list_2 < ll.List(self.items)) is True
-        assert (self.list_2 < ll.List(self.item)) is False
+        assert (self.list_2 < ll.List([self.item])) is False
         # ---------- #
-        assert (self.list_3 < ll.List(self.item)) is True
+        assert (self.list_3 < ll.List([self.item])) is True
         assert (self.list_3 < ll.List()) is False
 
     def test_list_ge(self):
-        assert self.list_1.__ge__(ll.List(self.item)) is True
+        assert self.list_1.__ge__(ll.List([self.item])) is True
         assert self.list_1.__ge__(ll.List(self.items)) is True
         assert self.list_1.__ge__(ll.List(self.items * 2)) is False
         # ---------- #
         assert self.list_2.__ge__(ll.List(self.items)) is False
-        assert self.list_2.__ge__(ll.List(self.item)) is True
+        assert self.list_2.__ge__(ll.List([self.item])) is True
         assert self.list_2.__ge__(ll.List()) is True
         # ---------- #
-        assert self.list_3.__ge__(ll.List(self.item)) is False
+        assert self.list_3.__ge__(ll.List([self.item])) is False
         assert self.list_3.__ge__(ll.List()) is True
         # <<<<<>>>>> #
-        assert (self.list_1 >= ll.List(self.item)) is True
+        assert (self.list_1 >= ll.List([self.item])) is True
         assert (self.list_1 >= ll.List(self.items)) is True
         assert (self.list_1 >= ll.List(self.items * 2)) is False
         # ---------- #
         assert (self.list_2 >= ll.List(self.items)) is False
-        assert (self.list_2 >= ll.List(self.item)) is True
+        assert (self.list_2 >= ll.List([self.item])) is True
         assert (self.list_2 >= ll.List()) is True
         # ---------- #
-        assert (self.list_3 >= ll.List(self.item)) is False
+        assert (self.list_3 >= ll.List([self.item])) is False
         assert (self.list_3 >= ll.List()) is True
 
     def test_list_le(self):
-        assert self.list_1.__le__(ll.List(self.item)) is False
+        assert self.list_1.__le__(ll.List([self.item])) is False
         assert self.list_1.__le__(ll.List(self.items)) is True
         assert self.list_1.__le__(ll.List(self.items * 2)) is True
         # ---------- #
         assert self.list_2.__le__(ll.List(self.items)) is True
-        assert self.list_2.__le__(ll.List(self.item)) is True
+        assert self.list_2.__le__(ll.List([self.item])) is True
         assert self.list_2.__le__(ll.List()) is False
         # ---------- #
-        assert self.list_3.__le__(ll.List(self.item)) is True
+        assert self.list_3.__le__(ll.List([self.item])) is True
         assert self.list_3.__le__(ll.List()) is True
         # <<<<<>>>>> #
-        assert (self.list_1 <= ll.List(self.item)) is False
+        assert (self.list_1 <= ll.List([self.item])) is False
         assert (self.list_1 <= ll.List(self.items)) is True
         assert (self.list_1 <= ll.List(self.items * 2)) is True
         # ---------- #
         assert (self.list_2 <= ll.List(self.items)) is True
-        assert (self.list_2 <= ll.List(self.item)) is True
+        assert (self.list_2 <= ll.List([self.item])) is True
         assert (self.list_2 <= ll.List()) is False
         # ---------- #
-        assert (self.list_3 <= ll.List(self.item)) is True
+        assert (self.list_3 <= ll.List([self.item])) is True
         assert (self.list_3 <= ll.List()) is True
 
     def test_list_getitem(self):
