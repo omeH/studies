@@ -5,13 +5,10 @@ import pytest
 
 import linkedlist as ll
 
-"""
 if "TEST_PYTHON_LIST" in os.environ:
     List = list
 else:
     List = ll.List
-"""
-List = ll.List
 
 
 class TestListInterface(object):
@@ -85,12 +82,10 @@ class TestListInterface(object):
         l = List()
         l.append(l)
 
-        #some buggy containers generate runtime errors here:)
-        #RuntimeError: maximum recursion depth exceeded while calling a Python object
-        with pytest.raises(RuntimeError):
-            str(l)
-
-
+        # some buggy containers generate runtime errors here:)
+        # RuntimeError: maximum recursion depth exceeded while calling a Python object
+        # with pytest.raises(RuntimeError):
+        assert str(l) == '[[...]]'
 
     def test_copy(self):
         l1 = List( self.TEST_LIST )
@@ -132,14 +127,12 @@ class TestListInterface(object):
         l2 = List( (b2, b1) )
         assert l1 == l2
 
-
         l1 = List( self.TEST_LIST )
         l2 = List( [1] )
         assert l1 != l2
         assert l1 > l2
         assert l1 >= l2
         assert l2 <= l1
-
 
     def test_indexing(self):
         l1 = List( self.TEST_LIST )
@@ -191,7 +184,6 @@ class TestListInterface(object):
         with pytest.raises(IndexError):
             l1.pop(-5)
 
-    """
     def test_extend(self):
         l1 = List( self.TEST_LIST )
         l1.extend( self.TEST_TUPLE )
@@ -202,7 +194,6 @@ class TestListInterface(object):
         assert len(l1) == 4 * self.TEST_LEN
         assert [elem for elem in l1] == 4 * self.TEST_LIST
 
-
     def test_append(self):
         l1 = List()
         for _ in range( self.TEST_LEN ):
@@ -210,7 +201,6 @@ class TestListInterface(object):
 
         assert len(l1) == self.TEST_LEN
         assert [elem for elem in l1] == [self.TEST_TUPLE] * self.TEST_LEN
-
 
     def test_insert(self):
         l1 = List( self.TEST_LIST )
@@ -227,14 +217,12 @@ class TestListInterface(object):
         assert len(l1) == self.TEST_LEN * 2
         assert [elem for elem in l1] == [1, 2, 1, 2, 3, 3]
 
-
         l1 = List( self.TEST_LIST )
         for elem in self.TEST_TUPLE:
             l1.insert(1, elem)
 
         assert len(l1) == self.TEST_LEN * 2
         assert [elem for elem in l1] == [1, 3, 2, 1, 2, 3]
-
 
     def test_remove(self):
         l1 = List( self.TEST_LIST )
@@ -267,5 +255,4 @@ class TestListInterface(object):
 
         l1 = List( self.TEST_LIST )
         with pytest.raises(IndexError):
-            del l1[100500]
-    """
+            del l1[self.TEST_100500]

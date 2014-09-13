@@ -18,6 +18,10 @@ def isiterable(p_object):
         return True
 
 
+class _ListSelfLinkError(Exception):
+    pass
+
+
 class _Node(object):
     """
     Node(value) -> new Node initialized
@@ -65,6 +69,7 @@ class _Node(object):
     def set_link(self, link):
         """
         N.set_link(link) -- N.link = link
+
         >>> node_1 = _Node('test')
         >>> node_2 = _Node('spam')
         >>> node_1.set_link(node_2)
@@ -89,6 +94,8 @@ class List(object):
     CMP_POSITIVE = 1
     step = 1
     length = 0
+    depth = 0
+    max_depth = 20
 
     def __init__(self, data=None):
         """
@@ -121,13 +128,6 @@ class List(object):
         elif isiterable(data):
             for element in data:
                 self.append(element)
-        """
-        else:
-            raise TypeError('\'{0\' object is not itarable}')
-            self.head = _Node(data)
-            self.tail = self.head
-            self.length = 1
-        """
 
     def __len__(self):
         """
@@ -161,23 +161,38 @@ class List(object):
 
         >>> list_1 = List(['test', 'spam', 'maps'])
         >>> print(list_1)
-        linkedlist.List(['test', 'spam', 'maps'])
+        ['test', 'spam', 'maps']
         """
+        self.depth += 1
+        if self.depth >= self.max_depth:
+            raise _ListSelfLinkError()
         try:
-           msg = self.PRINT_STR.format([item for item in self])
-        except RuntimeError, error:
-            raise error
-        else:
-            return self.PRINT_STR.format([item for item in self])
+            msg = '{0}'.format([item for item in self])
+        except _ListSelfLinkError:
+            if self.depth > 2:
+                raise
+            msg = '[[...]]'
+        finally:
+            self.depth -= 1
+        return msg
+        """
+        result = []
+        for item in self:
+            if item is self:
+                return '[[...]]'
+            result.append(item)
+        return '{0}'.format(result)
+        """
 
     def __repr__(self):
         """
         L.__repr__() <==> repr(L))
+
         >>> list_1 = List(['test', 'spam', 'maps'])
         >>> print(list_1.__repr__())
         linkedlist.List(['test', 'spam', 'maps'])
         """
-        return self.__str__()
+        return self.PRINT_STR.format(self.__str__())
 
     def __add__(self, other):
         """
@@ -215,7 +230,7 @@ class List(object):
         # event of: L += L; was not triggered by an infinite
         # cycle.
         if self is other:
-            new  = List(other)
+            new = List(other)
         else:
             new = other
 
@@ -226,7 +241,7 @@ class List(object):
     def __cmp__(self, other):
         """
         L.__cmp__(Y) -> integer <==> cmp(L, Y)
-        return negative if L<Y, zero if L=Y, positive if L>Y.
+        Return negative if L<Y, zero if L=Y, positive if L>Y.
 
         >>> list_1 = List('test')
         >>> list_2 = List('spam')
@@ -441,24 +456,24 @@ class List(object):
         """
         L.insert(index, value) -- insert value before index.
 
-            >>> list_1 = List()
-            >>> list_1.insert(1, 'test')
-            >>> list_1.get()
-            'test'
-            >>> list_1.insert(0, 'spam')
-            >>> list_1.get()
-            'test'
-            >>> list_1.head.value
-            'spam'
-            >>> list_1.insert(5, 'maps')
-            >>> list_1.get()
-            'maps'
-            >>> list_1.insert(2, 333)
-            >>> for item in list_1:  print(item)
-            spam
-            test
-            333
-            maps
+        >>> list_1 = List()
+        >>> list_1.insert(1, 'test')
+        >>> list_1.get()
+        'test'
+        >>> list_1.insert(0, 'spam')
+        >>> list_1.get()
+        'test'
+        >>> list_1.head.value
+        'spam'
+        >>> list_1.insert(5, 'maps')
+        >>> list_1.get()
+        'maps'
+        >>> list_1.insert(2, 333)
+        >>> for item in list_1:  print(item)
+        spam
+        test
+        333
+        maps
         """
         # Transform the negative intro a positive index
         if index < 0:
@@ -506,6 +521,8 @@ class List(object):
             ...
         ValueError: List.remove(x): x not in List
         """
+        if self.length == 0:
+            raise ValueError('List.remove(x): x not in List')
         if item == self.head.value:
             self.head = self.head.link
             self.length -= self.step
@@ -643,13 +660,20 @@ class List(object):
         >>> list_1
         linkedlist.List(['test', 'spam', 'maps', 'food'])
         """
-        for item in iterable:
+        if self is iterable:
+            new = List(iterable)
+        else:
+            new = iterable
+
+        for item in new:
             self.append(item)
 
     def pop(self, index=None):
         """
-        L.pop() -> item -- remove and return the last item on the L.
+        L.pop(index) -> item -- remove and return item at
+        index (default last) on the L.
         Raises IndexError if empty List.
+        Raises TypeError if index is not integers.
 
         >>> list_1 = List('test')
         >>> list_1.append('spam')

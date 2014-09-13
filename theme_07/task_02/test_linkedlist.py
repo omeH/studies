@@ -1,4 +1,3 @@
-import copy
 import pytest
 
 import linkedlist as ll
@@ -113,17 +112,13 @@ class TestClass(object):
         assert isinstance(iter(self.list_3), ll._ListIter)
 
     def test_list_str(self):
-        str_1 = 'linkedlist.List({0})'.format(self.items)
-        str_2 = 'linkedlist.List([{0}])'.format(self.item)
-        str_3 = 'linkedlist.List([])'
+        assert self.list_1.__str__() == str(self.items)
+        assert self.list_2.__str__() == str([self.item])
+        assert self.list_3.__str__() == str([])
         # <<<<<>>>>> #
-        assert self.list_1.__str__() == str_1
-        assert self.list_2.__str__() == str_2
-        assert self.list_3.__str__() == str_3
-        # <<<<<>>>>> #
-        assert str(self.list_1) == str_1
-        assert str(self.list_2) == str_2
-        assert str(self.list_3) == str_3
+        assert str(self.list_1) == str(self.items)
+        assert str(self.list_2) == str([self.item])
+        assert str(self.list_3) == str([])
 
     def test_list_repr(self):
         str_1 = 'linkedlist.List({0})'.format(self.items)
