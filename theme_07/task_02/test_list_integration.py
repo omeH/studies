@@ -87,6 +87,13 @@ class TestListInterface(object):
         # with pytest.raises(RuntimeError):
         assert str(l) == '[[...]]'
 
+        l1 = List()
+        l2 = List()
+        l2.append(l1)
+        l1.append(l2)
+        assert str(l1) == '[[...]]'
+        assert str(l2) == '[[...]]'
+
     def test_copy(self):
         l1 = List( self.TEST_LIST )
         l2 = copy.copy(l1)
