@@ -18,10 +18,6 @@ def isiterable(p_object):
         return True
 
 
-class _ListSelfLinkError(Exception):
-    pass
-
-
 class _Node(object):
     """
     Node(value) -> new Node initialized
@@ -475,7 +471,7 @@ class List(object):
             self.append(value)
             return
         # Insert item before one items
-        if index == 0:
+        if index <= 0:
             self._appstart(value)
             return
         current = self.head
@@ -715,7 +711,7 @@ class _ListIter(object):
     ListIter(obj) -> new ListIter initialized
     """
 
-    current = None
+    _current = None
 
     def __init__(self, obj):
         """

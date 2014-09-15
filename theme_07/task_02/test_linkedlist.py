@@ -13,11 +13,17 @@ class TestClass(object):
         self.CMP_NEGATIVE = -1
         self.CMP_ZERO = 0
         self.CMP_POSITIVE = 1
+        self.test_list = ['t', 'e', 's', 't']
+        self.test_dict = {1: None, 2: None, 3: None, 4: None}
+        self.test_tuple = (1, 2, 3, 4)
         self.items = ['test', 'spam', 'maps', 'food']
         self.list_1 = ll.List(self.items)
         self.item = 333
         self.list_2 = ll.List([self.item])
         self.list_3 = ll.List()
+        # linkedlist.List
+        self.it_1 = iter(self.list_1)
+        self.it_2 = iter(self.list_3)
 
     ###################################
     # Tests for class linkedlist.Node #
@@ -421,68 +427,101 @@ class TestClass(object):
         with pytest.raises(IndexError):
             list_tmp.__delitem__(-2)
 
-    def test_list(self):
-        self.list_1 = ll.List()
-        # --- List->__init__(value=None) ---
-        assert self.list_1.head is None
-        assert self.list_1.tail is None
-        self.list_1 = ll.List([])
-        # --- List->__init__(value) ---
-        # --- List->get ---
-        with pytest.raises(ValueError):
-            self.list_1.get()
-        self.list_1 = ll.List([[]])
-        assert isinstance(self.list_1.get(), list)
-        assert self.list_1.get() == []
-        # --- List->append ---
-        self.list_1.append('test')
-        assert isinstance(self.list_1.get(), str)
-        assert self.list_1.get() == 'test'
-        # --- List->append ---
-        self.list_1.append({})
-        assert isinstance(self.list_1.get(), dict)
-        assert self.list_1.get() == {}
-        # --- List->append ---
-        self.list_1.append(333)
-        assert isinstance(self.list_1.get(), int)
-        assert self.list_1.get() == 333
-        # --- List->appstart ---
-        self.list_1._appstart(222)
-        assert self.list_1.head.value == 222
-        self.list_1._appstart('maps')
-        assert self.list_1.head.value == 'maps'
-        # --- List->insert ---
-        self.list_1.insert(3, 'spam')
-        self.list_1.insert(0, 'flood')
-        assert self.list_1.head.value == 'flood'
-        self.list_1.insert(10, 'food')
-        assert self.list_1.get() == 'food'
-        assert len(self.list_1) == 9
-        # --- List->pop ---
-        assert self.list_1.pop() == 'food'
-        assert self.list_1.pop() == 333
-        # --- List->__len__ ---
-        assert len(self.list_1) == 7
-        self.list_2 = ll.List(['test'])
-        self.list_3 = ll.List(['test'])
-        assert self.list_2 == self.list_3
-        assert self.list_1 != self.list_2
-
     def test_list_insert(self):
-        # self.list_1 = ll.List(['test', 'spam', 'maps', 'food'])
         self.list_1.insert(0, 'm1')
-        assert self.list_1.head.value == 'm1'
+        assert self.list_1[0] == 'm1'
         self.list_1.insert(1, 'm2')
-        assert self.list_1.head.link.value == 'm2'
+        assert self.list_1[1] == 'm2'
         self.list_1.insert(10, 'm3')
         assert self.list_1.get() == 'm3'
+        # ---------- #
         self.list_1.insert(-1, 'm4')
-        current = self.list_1.head
-        while current.link != self.list_1.tail:
-            current = current.link
-        assert current.value == 'm4'
+        assert self.list_1[-2] == 'm4'
         self.list_1.insert(-8, 'm5')
-        assert self.list_1.head.value == 'm5'
+        assert self.list_1[-9] == 'm5'
+        self.list_1.insert(-15, 'm6')
+        assert self.list_1[-10] == 'm6'
+
+    def test_list_remove(self):
+        assert len(self.list_1) == len(self.items)
+        self.list_1.remove('test')
+        assert ('test' in self.list_1) is False
+        assert len(self.list_1) == len(self.items) - 1
+        self.list_1.remove('maps')
+        assert ('maps' in self.list_1) is False
+        assert len(self.list_1) == len(self.items) - 2
+        self.list_1.remove('food')
+        assert('food' in self.list_1) is False
+        assert len(self.list_1) == len(self.items) - 3
+        with pytest.raises(ValueError):
+            self.list_1.remove('list')
+        # ---------- #
+        with pytest.raises(ValueError):
+            self.list_3.remove('test')
+
+    def test_list_item(self):
+        self.test_list_getitem()
+
+    def test_list_appstart(self):
+        assert len(self.list_1) == len(self.items)
+        self.list_1._appstart('list')
+        assert len(self.list_1) == len(self.items) + 1
+        assert self.list_1[0] == 'list'
+        # ---------- #
+        assert len(self.list_3) == 0
+        self.list_3._appstart('list')
+        assert len(self.list_3) == 1
+        assert self.list_3[0] == 'list'
+
+    def test_list_get(self):
+        assert self.list_1.get() == self.items[-1]
+        self.list_1.append('list')
+        assert self.list_1.get() == 'list'
+        # ---------- #
+        with pytest.raises(ValueError):
+            self.list_3.get()
+
+    def test_list_append(self):
+        assert self.list_1.get() == self.items[-1]
+        self.list_1.append('list')
+        assert self.list_1.get() == 'list'
+        # ---------- #
+        with pytest.raises(ValueError):
+            self.list_3.get()
+        self.list_3.append('list')
+        assert self.list_3.get() == 'list'
+
+    def test_list_extend(self):
+        self.list_1.extend(self.test_list)
+        assert len(self.list_1) == len(self.items) + len(self.test_list)
+        # ---------- #
+        self.list_2.extend(self.test_dict)
+        assert len(self.list_2) == 1 + len(self.test_dict)
+        # ---------- #
+        self.list_3.extend(self.test_tuple)
+        assert len(self.list_3) == len(self.test_tuple)
+        # ---------- #
+        self.list_1.extend(self.list_3)
+        assert len(self.list_1) == \
+            len(self.items) + len(self.test_list) + len(self.test_tuple)
+
+    def test_list_pop(self):
+        self.list_1.extend(self.test_list)
+        assert self.list_1.pop(0) == self.items[0]
+        assert self.list_1.pop(2) == self.items[-1]
+        assert self.list_1.pop() == self.test_list[-1]
+        # ---------- #
+        assert self.list_1.pop(-1) == self.test_list[-2]
+        assert self.list_1.pop(-2) == self.test_list[0]
+        # ---------- #
+        with pytest.raises(IndexError):
+            self.list_1.pop(10)
+        # ---------- #
+        with pytest.raises(TypeError):
+            self.list_1.pop('spam')
+        # ---------- #
+        with pytest.raises(IndexError):
+            self.list_3.pop()
 
     def test_listiter(self):
         self.list_1 = ll.List('test')
@@ -502,3 +541,23 @@ class TestClass(object):
         # --- ListIter->next->StopIteration ---
         with pytest.raises(StopIteration):
             self.it.next()
+
+    #######################################
+    # Tests for class linkedlist.ListIter #
+    #######################################
+
+    def test_listiter_init(self):
+        assert self.it_1._current == self.list_1.head
+        assert self.it_2._current == self.list_3.head
+
+    def test_listiter_iter(self):
+        assert isinstance(self.it_1.__iter__(), ll._ListIter)
+        assert isinstance(iter(self.it_2), ll._ListIter)
+
+    def test_listiter_next(self):
+        for index in range(len(self.list_1)):
+            if self.it_1.next() != self.items[index]:
+                pytest.fail('Bad _ListIter.next()')
+        # ---------- #
+        with pytest.raises(StopIteration):
+            self.it_2.next()
