@@ -89,13 +89,12 @@ class List(object):
     """
 
     PRINT_STR = 'linkedlist.List({0})'
+    RUNTIMEERROR_STR = '[[...]]'
     CMP_NEGATIVE = -1
     CMP_ZERO = 0
     CMP_POSITIVE = 1
     step = 1
     length = 0
-    depth = 0
-    max_depth = 20
 
     def __init__(self, data=None):
         """
@@ -163,26 +162,15 @@ class List(object):
         >>> print(list_1)
         ['test', 'spam', 'maps']
         """
-        self.depth += 1
-        if self.depth >= self.max_depth:
-            raise _ListSelfLinkError()
         try:
             msg = '{0}'.format([item for item in self])
-        except _ListSelfLinkError:
-            if self.depth > 2:
-                raise
-            msg = '[[...]]'
+        except RuntimeError:
+            msg = self.RUNTIMEERROR_STR
+            # raise e
         finally:
-            self.depth -= 1
-        return msg
-        """
-        result = []
-        for item in self:
-            if item is self:
-                return '[[...]]'
-            result.append(item)
-        return '{0}'.format(result)
-        """
+            if self.RUNTIMEERROR_STR in msg:
+                msg = self.RUNTIMEERROR_STR
+            return msg
 
     def __repr__(self):
         """
