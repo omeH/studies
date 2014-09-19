@@ -8,17 +8,7 @@ Description:
     them to the specified file.
 """
 
-import signal
-import sys
-
 import const
-
-
-def sigint_handler(error, stack):
-    """Handler keystrokes CTRL+C
-    """
-    sys.stdout.write('\n')
-    sys.exit(1)
 
 
 def copy_stdin_to_file(file_):
@@ -26,7 +16,7 @@ def copy_stdin_to_file(file_):
     writes to file.
     """
     while True:
-        block = sys.stdin.read(const.BUFFER_SIZE)
+        block = const.STDIN.read(const.BUFFER_SIZE)
         if not block:
             break
         file_.write(block)
@@ -35,25 +25,27 @@ def copy_stdin_to_file(file_):
 def main():
     """The main function
     """
-    signal.signal(signal.SIGINT, sigint_handler)
-    const.setmode([sys.stdin, sys.stdout])
+    # signal.signal(signal.SIGINT, sigint_handler)
+    # const.setmode([sys.stdin, sys.stdout])
+    const.init_options()
+    file_name = const.get_file_names()
     error_message = 'Filewrite.py: missing operand specifiers the file.\n' + \
         'Get more information on the command: "filewrite.py -h\n'
-    if len(sys.argv) == 1:
-        sys.stderr.write(error_message)
-        sys.exit(1)
-    if sys.argv[1] == '-h':
-        print(__doc__)
-        sys.exit(0)
+
+    if file_name is None:
+        const.STDERR.write(error_message)
+        const.EXIT(1)
+
+    const.print_help(__doc__)
+
     try:
-        file_ = open(sys.argv[1], 'wb')
+        file_ = open(file_name[0], 'wb')
         copy_stdin_to_file(file_)
         file_.close()
     except IOError as error:
-        sys.stderr.write('filewrite.py: {}\n'.format(error))
+        const.STDERR.write('filewrite.py: {}\n'.format(error))
     else:
-        sys.exit(0)
-    sys.exit(1)
+        const.EXIT(0)
 
 
 if __name__ == '__main__':
