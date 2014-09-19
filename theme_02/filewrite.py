@@ -25,8 +25,6 @@ def copy_stdin_to_file(file_):
 def main():
     """The main function
     """
-    # signal.signal(signal.SIGINT, sigint_handler)
-    # const.setmode([sys.stdin, sys.stdout])
     const.init_options()
     file_name = const.get_file_names()
     error_message = 'Filewrite.py: missing operand specifiers the file.\n' + \
