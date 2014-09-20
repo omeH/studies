@@ -7,17 +7,7 @@ Description:
     In the absence of input file, reading comes from the standard input.
     Display the contents of the files produced on standard output.
 """
-import signal
-import sys
-
 import const
-
-
-def sigint_handler(error, stack):
-    """Handler keystrokes CTRL+C
-    """
-    sys.stderr.write('\n')
-    sys.exit(1)
 
 
 def copy_file_to_stdout(file_):
@@ -28,32 +18,28 @@ def copy_file_to_stdout(file_):
         block = file_.read(const.BUFFER_SIZE)
         if not block:
             break
-        sys.stdout.write(block)
+        const.STDOUT.write(block)
 
 
 def main():
     """The main function
     """
-    signal.signal(signal.SIGINT, sigint_handler)
-    const.setmode([sys.stdin, sys.stdout])
+    const.init_options()
+    file_names = const.get_file_names()
 
-    if len(sys.argv) == 1:
-        copy_file_to_stdout(sys.stdin)
-        sys.exit(0)
+    if file_names is None or len(file_names) == 0:
+        copy_file_to_stdout(const.STDIN)
+        const.EXIT(0)
 
-    if sys.argv[1] == '-h':
-        print(__doc__)
-        sys.exit(0)
+    const.print_help(__doc__)
 
-    file_names = sys.argv[1:]
     for file_name in file_names:
         try:
             file_ = open(file_name, 'rb')
             copy_file_to_stdout(file_)
             file_.close()
-            # sys.stdout.write(open(file_).read())
         except IOError as error:
-            sys.stderr.write('fileread.py: {}\n'.format(error))
+            const.STDERR.write('fileread.py: {}\n'.format(error))
 
 
 if __name__ == '__main__':
