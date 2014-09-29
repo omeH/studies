@@ -61,9 +61,9 @@ class Unit(object):
         >>> rector = Rector('Ivanov Ivan', 5000, unit_1, age=50)
         >>> unit_2 = Unit('FZO', {})
         >>> dean = Dean('Semenov Semen', 4500, unit_2, age=45)
-        >>> unit_1.consist['rector'][0].name
+        >>> unit_1.consist[Rector.__name__][0].name
         'Ivanov Ivan'
-        >>> unit_2.consist['dean'][0].name
+        >>> unit_2.consist[Dean.__name__][0].name
         'Semenov Semen'
         >>> isinstance(unit_1.restrictions['Rector'], Rector)
         True
@@ -87,24 +87,24 @@ class Unit(object):
         >>> rectorate = Rectorate({}, {})
         >>> rector_1 = Rector('Ivanov Ivan', 5000, rectorate, age=50)
         >>> rector_2 = Rector('Semenov Semen', 4500, rectorate, age=45)
-        >>> rectorate.consist['rector'][0].name
+        >>> rectorate.consist[Rector.__name__][0].name
         'Ivanov Ivan'
         >>> rectorate.exclude(rector_2)
-        >>> rectorate.consist['rector'][0].name
+        >>> rectorate.consist[Rector.__name__][0].name
         'Ivanov Ivan'
         >>> rectorate.exclude(rector_1)
-        >>> rectorate.consist['rector']
+        >>> rectorate.consist[Rector.__name__]
         []
         >>> f_fzo = Faculty('FZO', {})
         >>> dean_1 = Dean('Ivanov Ivan', 5000, f_fzo, age=50)
         >>> dean_2 = Dean('Semenov Semen', 4500, f_fzo, age=45)
-        >>> f_fzo.consist['dean'][0].name
+        >>> f_fzo.consist[Dean.__name__][0].name
         'Ivanov Ivan'
         >>> f_fzo.exclude(dean_2)
-        >>> f_fzo.consist['dean'][0].name
+        >>> f_fzo.consist[Dean.__name__][0].name
         'Ivanov Ivan'
         >>> f_fzo.exclude(dean_1)
-        >>> f_fzo.consist['dean']
+        >>> f_fzo.consist[Dean.__name__]
         []
         """
         if self.consist.has_key(person.position):
@@ -173,7 +173,7 @@ class Unit(object):
         >>> dean = Dean('Semenov Semen', 5000, unit, age=25)
         >>> unit.celebrate('new year')
         From the department FZO to celebrate the new year present:
-            dean:
+            Dean:
                 Dean: Semenov Semen
             teacher:
                 Employee: Ivanov Ivan

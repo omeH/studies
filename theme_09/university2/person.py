@@ -282,7 +282,7 @@ class Rector(Employee):
         ('Ivanov Ivan', 40, 'Rectorate')
         """
         Employee.__init__(self, name, **info)
-        self.get_job('rector', pay, unit)
+        self.get_job(self.__class__.__name__, pay, unit)
 
     def __str__(self):
         """
@@ -389,9 +389,10 @@ class ViceRector(Rector):
         >>> v_rector.name, v_rector.direction, v_rector.pay,v_rector.info['age']
         ('Ivanov Ivan', 'study', 4000, 40)
         """
-        Employee.__init__(self, name, **info)
+        Rector.__init__(self, name, pay, unit, **info)
+        # Employee.__init__(self, name, **info)
         self.direction = direction
-        self.get_job('vicerector', pay, unit)
+        # self.get_job('vicerector', pay, unit)
 
     def __str__(self):
         """
@@ -421,8 +422,9 @@ class Dean(Rector):
         >>> dean.name, dean.info['age'], dean.unit.name
         ('Ivanov Ivan', 40, 'FZO')
         """
-        Employee.__init__(self, name, **info)
-        self.get_job('dean', pay, unit)
+        Rector.__init__(self, name, pay, unit, **info)
+        # Employee.__init__(self, name, **info)
+        # self.get_job('dean', pay, unit)
 
     def __str__(self):
         """
