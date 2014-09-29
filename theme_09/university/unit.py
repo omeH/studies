@@ -35,8 +35,8 @@ class Unit(object):
         self.name = name
         self.consist = consist
         self.restrictions['age'] = 17
-        self.restrictions['Rector'] = None
-        self.restrictions['Dean'] = None
+        self.restrictions[Rector.__name__] = None
+        self.restrictions[Dean.__name__] = None
 
     def __str__(self):
         """
@@ -57,9 +57,9 @@ class Unit(object):
         >>> rector = Rector('Ivanov Ivan', 5000, unit_1, age=50)
         >>> unit_2 = Unit('FZO', {})
         >>> dean = Dean('Semenov Semen', 4500, unit_2, age=45)
-        >>> unit_1.consist['rector'][0].name
+        >>> unit_1.consist[Rector.__name__][0].name
         'Ivanov Ivan'
-        >>> unit_2.consist['dean'][0].name
+        >>> unit_2.consist[Dean.__name__][0].name
         'Semenov Semen'
         >>> isinstance(unit_1.restrictions['Rector'], Rector)
         True
@@ -72,9 +72,9 @@ class Unit(object):
             self.consist[position].append(person)
         else:
             if person.__class__ is Rector:
-                self.restrictions['Rector'] = person
+                self.restrictions[Rector.__name__] = person
             if person.__class__ is Dean:
-                self.restrictions['Dean'] = person
+                self.restrictions[Dean.__name__] = person
             self.consist[position] = [person]
         return True
 
@@ -83,32 +83,32 @@ class Unit(object):
         >>> rectorate = Rectorate({}, {})
         >>> rector_1 = Rector('Ivanov Ivan', 5000, rectorate, age=50)
         >>> rector_2 = Rector('Semenov Semen', 4500, rectorate, age=45)
-        >>> rectorate.consist['rector'][0].name
+        >>> rectorate.consist[Rector.__name__][0].name
         'Ivanov Ivan'
         >>> rectorate.exclude(rector_2)
-        >>> rectorate.consist['rector'][0].name
+        >>> rectorate.consist[Rector.__name__][0].name
         'Ivanov Ivan'
         >>> rectorate.exclude(rector_1)
-        >>> rectorate.consist['rector']
+        >>> rectorate.consist[Rector.__name__]
         []
         >>> f_fzo = Faculty('FZO', {})
         >>> dean_1 = Dean('Ivanov Ivan', 5000, f_fzo, age=50)
         >>> dean_2 = Dean('Semenov Semen', 4500, f_fzo, age=45)
-        >>> f_fzo.consist['dean'][0].name
+        >>> f_fzo.consist[Dean.__name__][0].name
         'Ivanov Ivan'
         >>> f_fzo.exclude(dean_2)
-        >>> f_fzo.consist['dean'][0].name
+        >>> f_fzo.consist[Dean.__name__][0].name
         'Ivanov Ivan'
         >>> f_fzo.exclude(dean_1)
-        >>> f_fzo.consist['dean']
+        >>> f_fzo.consist[Dean.__name__]
         []
         """
         if self.consist.has_key(person.position):
             self.consist[person.position].remove(person)
             if isinstance(person, Rector):
-                self.restrictions['Rector'] = None
+                self.restrictions[Rector.__name__] = None
             if isinstance(person, Dean):
-                self.restrictions['Dean'] = None
+                self.restrictions[Dean.__name__] = None
 
     @classmethod
     def dismiss(cls, person):
@@ -152,10 +152,10 @@ class Unit(object):
             check.append(False if person.info['age'] >=
                          self.restrictions['age'] else True)
 
-        if person.__class__ is Rector and self.restrictions['Rector']:
+        if person.__class__ is Rector and self.restrictions[Rector.__name__]:
             check.append(True)
 
-        if person.__class__ is Dean and self.restrictions['Dean']:
+        if person.__class__ is Dean and self.restrictions[Dean.__name__]:
             check.append(True)
 
         return True if True in check else False
@@ -169,7 +169,7 @@ class Unit(object):
         >>> dean = Dean('Semenov Semen', 5000, unit, age=25)
         >>> unit.celebrate('new year')
         From the department FZO to celebrate the new year present:
-            dean:
+            Dean:
                 Dean: Semenov Semen
             teacher:
                 Employee: Ivanov Ivan

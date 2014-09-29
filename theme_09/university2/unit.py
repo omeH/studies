@@ -39,8 +39,8 @@ class Unit(object):
         self.name = name
         self.consist = consist
         self.restrictions['age'] = 17
-        self.restrictions['Rector'] = None
-        self.restrictions['Dean'] = None
+        self.restrictions[Rector.__name__] = None
+        self.restrictions[Dean.__name__] = None
 
     def __str__(self):
         """
@@ -76,9 +76,9 @@ class Unit(object):
             self.consist[position].append(person)
         else:
             if person.__class__ is Rector:
-                self.restrictions['Rector'] = person
+                self.restrictions[Rector.__name__] = person
             if person.__class__ is Dean:
-                self.restrictions['Dean'] = person
+                self.restrictions[Dean.__name__] = person
             self.consist[position] = [person]
         return True
 
@@ -110,9 +110,9 @@ class Unit(object):
         if self.consist.has_key(person.position):
             self.consist[person.position].remove(person)
             if isinstance(person, Rector):
-                self.restrictions['Rector'] = None
+                self.restrictions[Rector.__name__] = None
             if isinstance(person, Dean):
-                self.restrictions['Dean'] = None
+                self.restrictions[Dean.__name__] = None
 
     @classmethod
     def dismiss(cls, person):
@@ -156,10 +156,10 @@ class Unit(object):
             check.append(False if person.info['age'] >=
                          self.restrictions['age'] else True)
 
-        if person.__class__ is Rector and self.restrictions['Rector']:
+        if person.__class__ is Rector and self.restrictions[Rector.__name__]:
             check.append(True)
 
-        if person.__class__ is Dean and self.restrictions['Dean']:
+        if person.__class__ is Dean and self.restrictions[Dean.__name__]:
             check.append(True)
 
         return True if True in check else False
