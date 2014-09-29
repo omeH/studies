@@ -1,35 +1,20 @@
+"""Module defines and describes the objects:
+    Person, Employee, Rector, ViceRector, Dean, Teacher, Student
+"""
+
+
 import random
 
-from .variables import *
+from .const import YEAR, MIN_RATING, POSITIVE_RATING, MAX_RATING, TAB
+from .const import ABSENT_FROM_WORK, ABSENT_FROM_LESSON, VIOLATIONS
+from .const import N_DAYS_ABSENT_FROM_WORK, N_DAYS_ABSENT_FRON_LESSON
 from .other import today, timedelta, AccessDenied
 from .other import Exam
 
 
 class Person(object):
-    """
-    >>> person_1 = Person('Ivanov Ivan Ivanovich', age=20)
-    >>> person_2 = Person('Semenov Semen Semenovich', age=20)
-    >>> person_3 = Person('Sidorov Ivan Ivanovich', age=20)
-    >>> print(person_1)
-    Person: Ivanov Ivan Ivanovich
-    >>> print(person_1.info['age'])
-    20
-    >>> person_1.go_to('shop')
-    Person Ivanov Ivan Ivanovich goes to shop
-    >>> person_2.run_to('work')
-    Person Semenov Semen Semenovich running to work
-    >>> person_3.celebrate('new year', [person_1, person_2])
-    Person Sidorov Ivan Ivanovich celebration the new year with:
-        Person: Ivanov Ivan Ivanovich
-        Person: Semenov Semen Semenovich
-    >>> person_1.violations
-    []
-    >>> person_1.commit_violation('smoked in the room')
-    >>> person_1.violations[0][0]
-    'smoked in the room'
-    >>> person_1.talk(person_2, 'cars')
-    A Person Ivanov Ivan Ivanovich talk to a Person Semenov Semen Semenovich \
-about cars
+    """Class describes some of the attributes and behavior of the
+    object person.
     """
 
     # --------------
@@ -48,6 +33,11 @@ about cars
     position = None
 
     def __init__(self, name=None, **info):
+        """
+        >>> person = Person('Ivanov Ivan Ivanovich', age=20)
+        >>> person.name, person.info['age']
+        ('Ivanov Ivan Ivanovich', 20)
+        """
         self.info = {}
         self.violations = []
         if name:
@@ -58,30 +48,72 @@ about cars
                 self.info[key] = info[key]
 
     def __str__(self):
+        """
+        >>> person = Person('Ivanov Ivan Ivanovich', age=20)
+        >>> print(person)
+        Person: Ivanov Ivan Ivanovich
+        """
         return self.PERSON.format(self.name)
 
     def go_to(self, to):
+        """
+        >>> person = Person('Ivanov Ivan Ivanovich', age=20)
+        >>> person.go_to('shop')
+        Person Ivanov Ivan Ivanovich goes to shop
+        """
         print(self.PERSON_GO.format(self.__class__.__name__, self.name, to))
 
     def run_to(self, to):
+        """
+        >>> person = Person('Ivanov Ivan Ivanovich', age=20)
+        >>> person.run_to('shop')
+        Person Ivanov Ivan Ivanovich running to shop
+        """
         print(self.PERSON_RUN.format(self.__class__.__name__, self.name, to))
 
     def celebrate(self, what, with_whom):
+        """
+        >>> person_1 = Person('Ivanov Ivan Ivanovich', age=20)
+        >>> person_2 = Person('Semenov Semen Semenovich', age=20)
+        >>> person_3 = Person('Sidorov Ivan Ivanovich', age=20)
+        >>> person_3.celebrate('new year', [person_1, person_2])
+        Person Sidorov Ivan Ivanovich celebration the new year with:
+            Person: Ivanov Ivan Ivanovich
+            Person: Semenov Semen Semenovich
+        """
         print(self.PERSON_CELEBRATE.format(self.__class__.__name__,
                                            self.name, what))
         for person in with_whom:
             print('{0}{1}'.format(TAB, person))
 
     def commit_violation(self, view):
+        """
+        >>> person = Person('Ivanov Ivan Ivanovich', age=20)
+        >>> person.violations
+        []
+        >>> person.commit_violation('smoked in the room')
+        >>> person.violations[0][0]
+        'smoked in the room'
+        """
         self.violations.append((view, str(today())))
 
     def talk(self, person, about):
+        """
+        >>> person_1 = Person('Ivanov Ivan Ivanovich', age=20)
+        >>> person_2 = Person('Semenov Semen Semenovich', age=20)
+        >>> person_1.talk(person_2, 'cars')
+        A Person Ivanov Ivan Ivanovich talk to a Person Semenov Semen \
+Semenovich about cars
+        """
         print(self.PERSON_TALK.format(self.__class__.__name__, self.name,
                                       person.__class__.__name__, person.name,
                                       about))
 
 
 class Employee(Person):
+    """Class describes some of the attributes and behavior of the
+    object employee.
+    """
 
     # --------------
     # Message format
@@ -224,6 +256,9 @@ contract
 
 
 class Rector(Employee):
+    """Class describes some of the attributes and behavior of the
+    object rector.
+    """
 
     # --------------
     # Message format
@@ -289,7 +324,8 @@ class Rector(Employee):
         """
         return(self.RECTOR_SIGN_ORDER.format(self.name, about, str(today())))
 
-    def punish(self, person, what):
+    @classmethod
+    def punish(cls, person, what):
         """
         >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
@@ -300,7 +336,8 @@ class Rector(Employee):
         """
         person.commit_violation(what)
 
-    def promote(self, person, award):
+    @classmethod
+    def promote(cls, person, award):
         """
         >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
@@ -330,6 +367,9 @@ order #01
 
 
 class ViceRector(Rector):
+    """Class describes some of the attributes and behavior of the
+    object vice-rector.
+    """
 
     # --------------
     # Message format
@@ -361,6 +401,9 @@ class ViceRector(Rector):
 
 
 class Dean(Rector):
+    """Class describes some of the attributes and behavior of the
+    object dean.
+    """
 
     # --------------
     # Message format
@@ -389,6 +432,9 @@ class Dean(Rector):
 
 
 class Teacher(Employee):
+    """Class describes some of the attributes and behavior of the
+    object teacher.
+    """
 
     # --------------
     # Message format
@@ -431,7 +477,8 @@ Python language'
         """
         print(self.TEACHER_SESSION.format(self.name, lesson, theme))
 
-    def punish_student(self, student, violation):
+    @classmethod
+    def punish_student(cls, student, violation):
         """
         >>> d_evm = Department('EVM', {})
         >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
@@ -473,7 +520,8 @@ language'
                 student.exam.append(Exam(
                     lesson, random.randrange(MIN_RATING, limit), self))
 
-    def conduct_retake(self, exam):
+    @classmethod
+    def conduct_retake(cls, exam):
         """
         >>> d_evm = Department('EVM', {})
         >>> teacher = Teacher('Ivanov Ivan', 3000, d_evm, age=30)
@@ -507,6 +555,9 @@ language'
 
 
 class Student(Person):
+    """Class describes some of the attributes and behavior of the
+    object student.
+    """
 
     # --------------
     # Message format
@@ -532,10 +583,13 @@ class Student(Person):
         """
         Person.__init__(self, name, **info)
         self.position = 'student'
+        """
         if info.has_key('elder'):
             group.recruit('student', self, elder=True)
         else:
             group.recruit('student', self)
+        """
+        group.recruit('student', self)
         self.unit = group
         self.exam = []
 

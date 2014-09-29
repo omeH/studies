@@ -1,20 +1,37 @@
+"""Module defines and describes the objects:
+    Exam, Consultation, AccessDenied
+
+Function:
+    today, timedelta
+"""
+
+
 import datetime
 
 
 def today():
+    """
+    """
     return datetime.date.today()
 
 
 def timedelta(term):
+    """
+    """
     return datetime.timedelta(days=term)
 
 
 class AccessDenied(Exception):
+    """
+    """
 
     pass
 
 
 class Consultation(object):
+    """Class describes some of the attributes and behavior of the
+    object consultation.
+    """
 
     # --------------
     # Message format
@@ -55,6 +72,9 @@ class Consultation(object):
 
 
 class Exam(object):
+    """Class describes some of the attributes and behavior of the
+    object exam.
+    """
 
     # --------------
     # Message format

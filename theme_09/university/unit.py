@@ -1,9 +1,17 @@
+"""Module defines and describes the objects:
+    Unit, Rectorate, Department, Faculty, Group
+"""
+
+
 from .person import Rector, Dean
-from .variables import TAB
+from .const import TAB
 from .other import Consultation
 
 
 class Unit(object):
+    """Class describes some of the attributes and behavior of the
+    object unit.
+    """
 
     # --------------
     # Message format
@@ -102,7 +110,8 @@ class Unit(object):
             if isinstance(person, Dean):
                 self.restrictions['Dean'] = None
 
-    def dismiss(self, person):
+    @classmethod
+    def dismiss(cls, person):
         """
         >>> unit = Unit('FZO', {})
         >>> emp = Employee('Ivanov Ivan', age=20)
@@ -193,6 +202,9 @@ order on banning smoking in university
 
 
 class Rectorate(Unit):
+    """Class describes some of the attributes and behavior of the
+    object rectorate.
+    """
 
     # --------------
     # Message format
@@ -269,6 +281,9 @@ class Rectorate(Unit):
 
 
 class Faculty(Unit):
+    """Class describes some of the attributes and behavior of the
+    object faculty.
+    """
 
     # --------------
     # Message format
@@ -377,6 +392,9 @@ class Faculty(Unit):
 
 
 class Department(Unit):
+    """Class describes some of the attributes and behavior of the
+    object department.
+    """
 
     # --------------
     # Message format
@@ -463,6 +481,9 @@ class Department(Unit):
 
 
 class Group(Unit):
+    """Class describes some of the attributes and behavior of the
+    object group.
+    """
 
     # --------------
     # Message format
@@ -483,7 +504,8 @@ class Group(Unit):
     def __str__(self):
         return self.GROUP.format(self.name)
 
-    def recruit(self, position, student, elder=False):
+    def recruit(self, position, student):
         Unit.recruit(self, position, student)
-        if elder:
-            self.elder = student
+        if student.info.has_key('elder'):
+            if student.info['elder']:
+                self.elder = student
