@@ -324,8 +324,8 @@ class Rector(Employee):
         """
         return(self.RECTOR_SIGN_ORDER.format(self.name, about, str(today())))
 
-    @classmethod
-    def punish(cls, person, what):
+    @staticmethod
+    def punish(person, what):
         """
         >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
@@ -336,8 +336,8 @@ class Rector(Employee):
         """
         person.commit_violation(what)
 
-    @classmethod
-    def promote(cls, person, award):
+    @staticmethod
+    def promote(person, award):
         """
         >>> rectorate = Rectorate({}, {})
         >>> rector = Rector('Ivanov Ivan', 5000, rectorate, age=40)
