@@ -14,7 +14,7 @@ def safe(func, *args):
 
 def main():
     for args in (oops.oops_indexerror, oops.oops_oopserror, 'spam'):
-        safe(oops.used_oops, args)
+        safe(oops.main, args)
 
 
 if __name__ == '__main__':
