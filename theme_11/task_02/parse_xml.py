@@ -11,11 +11,6 @@ HAS_ID_PATTERN = r'id="(.*?)"[^/]'
 GET_TAG_VALUE_PATTERN = r'<(\w*?)( .*)?>(.*)</\1>'
 
 
-PATTERN = ''.join([
-    r''
-])
-
-
 class Person(object):
     pass
 
