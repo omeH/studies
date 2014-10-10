@@ -1,0 +1,31 @@
+<person id="A10CEF83EEF860AF63ADC877E2BD6CBE">
+    <clan_id>0</clan_id>
+    <color>0</color>
+    <color>1</color>
+    <exp_points>0</exp_points>
+    <level>1</level>
+    <nickname>clang</nickname>
+    <pvp_exp_points>0</pvp_exp_points>
+    <pvp_rank>1</pvp_rank>
+    <race_id>2</race_id>
+    <status>active</status>
+    <tutor_step_id>3</tutor_step_id>
+    <type>normal</type>
+    <weapon_skill_id>0</weapon_skill_id>
+    <money>
+        <currency id="1">300</currency>
+        <currency id="2">97</currency>
+        <currency id="3"/>
+        <test>
+            <currency id="1">300</currency>
+            <currency id="2">97</currency>
+            <currency id="3"/>
+        </test>
+    </money>
+    <test>
+        <currency id="1">300</currency>
+        <currency id="2">97</currency>
+        <currency id="3"/>
+    </test>
+</person>
+
