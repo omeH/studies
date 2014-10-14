@@ -3,6 +3,7 @@ import argparse
 import gzip
 import pprint
 import sys
+import signal
 
 # import timer
 
@@ -12,29 +13,31 @@ REGEX_IP = re.compile(
 )
 REGEX_HTTP = re.compile(r'[httpHTTP]{4}')
 REGEX_DATE_TIME = re.compile(r'(\d{2})/(\w{3})/(\d{4}):(2[0-3]|[01]\d)')
-
-GROUP_IP = 1
-GROUP_DAY = 1
-GROUP_MONTH = 2
-GROUP_YEAR = 3
-GROUP_HOUR = 4
+IS_GZIP = re.compile(r'(.gz)$')
 
 
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-f', '--file', type=str)
-    parser.add_argument('-r', '--requests', action='store_true')
-    parser.add_argument('-s', '--statistics', action='store_true')
+    parser.add_argument('-m', '--mode', type=str)
+    parser.add_argument('files', nargs='+')
 
     return parser.parse_args()
 
 
-def run_function(function, file_name):
-    with gzip.open(file_name) as file_log:
-        result = function(file_log)
-    pprint.pprint(result)
-    print()
+def run_function(function, file_list):
+    for file_name in file_list:
+        if IS_GZIP.search(file_name):
+            function_open = gzip.open
+        else:
+            function_open = open
+
+        with function_open(file_name) as file_log:
+            result = function(file_log)
+
+        print('Result for file - {0}:'.format(file_name))
+        pprint.pprint(result)
+        print
 
 
 def cmp_http(x, y):
@@ -50,24 +53,25 @@ def format_date_time(date_time):
 
 
 def add_item(dict_, key):
-    if dict_.has_key(key):
+    if key in dict_:
         dict_[key] += 1
     else:
         dict_[key] = 1
 
 
-def requests_http(log_file):
+def requests_by_ip(log_file):
     result = {}
+    group_ip = 1
     for line in log_file:
         obj = REGEX_IP.search(line)
         if obj:
-            ip_address = obj.group(GROUP_IP)
+            ip_address = obj.group(group_ip)
         if REGEX_HTTP.search(line):
             add_item(result, ip_address)
     return sorted(result.items(), cmp=cmp_http, reverse=True)
 
 
-def query_statistics(log_file):
+def requests_by_hour(log_file):
     result = {}
     for line in log_file:
         obj = REGEX_DATE_TIME.search(line)
@@ -77,22 +81,23 @@ def query_statistics(log_file):
     return sorted(result.items(), cmp=cmp_date_time)
 
 
-RUN_DICT = {
-    'requests': requests_http,
-    'statistics': query_statistics
+CHOICE = {
+    'requests_by_ip': requests_by_ip,
+    'requests_by_hour': requests_by_hour
 }
 
 
 def main():
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
     options = parse_args()
+    # file_list = options.file_list.split(',')
 
-    if not options.requests and not options.statistics:
+    if not options.mode:
         sys.stderr.write('--> Search mode unknown <--\n')
         sys.exit(1)
 
-    for key in RUN_DICT:
-        if options.__dict__[key]:
-            run_function(RUN_DICT[key], options.file)
+    if options.mode in CHOICE:
+        run_function(CHOICE[options.mode], options.files)
 
 
 if __name__ == '__main__':
