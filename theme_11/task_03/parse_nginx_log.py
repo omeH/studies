@@ -16,13 +16,9 @@ REGEX_DATE_TIME = re.compile(r'(\d{2})/(\w{3})/(\d{4}):(2[0-3]|[01]\d)')
 IS_GZIP = re.compile(r'(.gz)$')
 
 
-def parse_args():
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('-m', '--mode', type=str)
-    parser.add_argument('files', nargs='+')
-
-    return parser.parse_args()
+def sigint_hundler(error, stack):
+    sys.stderr.write('\n')
+    sys.exit(1)
 
 
 def run_function(function, file_list):
@@ -81,14 +77,25 @@ def requests_by_hour(log_file):
     return sorted(result.items(), cmp=cmp_date_time)
 
 
-CHOICE = {
+CHOICES = {
     'requests_by_ip': requests_by_ip,
     'requests_by_hour': requests_by_hour
 }
 
 
+def parse_args():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('-m', '--mode', type=str, choices=CHOICES)
+    parser.add_argument('files', nargs='+')
+
+    return parser.parse_args()
+
+
 def main():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+    signal.signal(signal.SIGINT, sigint_hundler)
+
     options = parse_args()
     # file_list = options.file_list.split(',')
 
@@ -96,8 +103,10 @@ def main():
         sys.stderr.write('--> Search mode unknown <--\n')
         sys.exit(1)
 
-    if options.mode in CHOICE:
-        run_function(CHOICE[options.mode], options.files)
+    if options.mode in CHOICES:
+        run_function(CHOICES[options.mode], options.files)
+    else:
+        sys.stderr.write('Error: {0} ')
 
 
 if __name__ == '__main__':
