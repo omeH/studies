@@ -105,8 +105,6 @@ def main():
 
     if options.mode in CHOICES:
         run_function(CHOICES[options.mode], options.files)
-    else:
-        sys.stderr.write('Error: {0} ')
 
 
 if __name__ == '__main__':
