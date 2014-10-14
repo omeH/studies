@@ -19,7 +19,7 @@ class TestCorrectness(object):
 
     def test_isdate(self):
         assert correctness.is_date_time(self.str_data_1) is True
-        assert correctness.is_date_time(self.str_data_2) is False
+        assert correctness.is_date_time(self.str_data_2) is True
         assert correctness.is_date_time(self.str_data_3) is False
         assert correctness.is_date_time(self.str_data_4) is False
         assert correctness.is_date_time(self.str_data_5) is False
