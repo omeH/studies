@@ -97,7 +97,7 @@ class ModuleParser(argparse.ArgumentParser):
 ##################
 
 
-def sigint_hundler(error, stack):
+def sigint_handler(error, stack):
     sys.stderr.write('\n')
     sys.exit(1)
 
@@ -105,7 +105,7 @@ def sigint_hundler(error, stack):
 def print_csv(result, info):
     with open(OUT_CSV.format(info), 'w') as out_file:
         for line in result:
-            out_file.write('{0}:{1}\n'.format(*line))
+            out_file.write('{0},{1}\n'.format(*line))
 
 
 def run_function(function, options):
@@ -114,6 +114,7 @@ def run_function(function, options):
         pprint.pprint(result)
     else:
         print_csv(result, options.mode)
+        pprint.pprint(result)
 
 
 def cmp_http(x, y):
@@ -207,7 +208,7 @@ def parse_args():
 
 def main():
     signal.signal(signal.SIGPIPE, signal.SIG_DFL)
-    signal.signal(signal.SIGINT, sigint_hundler)
+    signal.signal(signal.SIGINT, sigint_handler)
 
     options = parse_args()
 
