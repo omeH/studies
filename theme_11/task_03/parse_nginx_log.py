@@ -15,25 +15,38 @@ REGEX_HTTP = re.compile(r'[httpHTTP]{4}')
 REGEX_DATE_TIME = re.compile(r'(\d{2})/(\w{3})/(\d{4}):(2[0-3]|[01]\d)')
 IS_GZIP = re.compile(r'(.gz)$')
 
+OUT_CSV = 'output.{0}.csv'
+
 
 def sigint_hundler(error, stack):
     sys.stderr.write('\n')
     sys.exit(1)
 
 
-def run_function(function, file_list):
-    for file_name in file_list:
-        if IS_GZIP.search(file_name):
+def print_csv(result, info):
+    with open(OUT_CSV.format(info), 'w') as out_file:
+        for line in result:
+            out_file.write('{0}:{1}\n'.format(*line))
+
+
+def run_function(function, options):
+    result = function(options.files)
+    if options.out_format == 'print':
+        pprint.pprint(result)
+    else:
+        print_csv(result, options.mode)
+
+
+def read_files(file_list):
+    for name_file in file_list:
+        if IS_GZIP.search(name_file):
             function_open = gzip.open
         else:
             function_open = open
 
-        with function_open(file_name) as file_log:
-            result = function(file_log)
-
-        print('Result for file - {0}:'.format(file_name))
-        pprint.pprint(result)
-        print
+        with function_open(name_file) as log_file:
+            for line in log_file:
+                yield line
 
 
 def cmp_http(x, y):
@@ -58,7 +71,7 @@ def add_item(dict_, key):
 def requests_by_ip(log_file):
     result = {}
     group_ip = 1
-    for line in log_file:
+    for line in read_files(log_file):
         obj = REGEX_IP.search(line)
         if obj:
             ip_address = obj.group(group_ip)
@@ -69,7 +82,7 @@ def requests_by_ip(log_file):
 
 def requests_by_hour(log_file):
     result = {}
-    for line in log_file:
+    for line in read_files(log_file):
         obj = REGEX_DATE_TIME.search(line)
         if obj:
             key = format_date_time(obj.groups())
@@ -86,7 +99,10 @@ CHOICES = {
 def parse_args():
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('-m', '--mode', type=str, choices=CHOICES)
+    parser.add_argument(
+        '-o', '--out-format', type=str, default='print', choices=['print', 'csv']
+    )
+    parser.add_argument('-m', '--mode', type=str, choices=CHOICES.keys())
     parser.add_argument('files', nargs='+')
 
     return parser.parse_args()
@@ -104,7 +120,7 @@ def main():
         sys.exit(1)
 
     if options.mode in CHOICES:
-        run_function(CHOICES[options.mode], options.files)
+        run_function(CHOICES[options.mode], options)
 
 
 if __name__ == '__main__':
