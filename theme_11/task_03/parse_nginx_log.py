@@ -1,3 +1,54 @@
+"""This module parses the log-files of connections to the
+nginx server.
+
+Description:
+    The module can work both directly with log-file and
+    archive gzip containing log-file. If the module
+    receives input multiple files, they are processed
+    and the information is incorporated into a single
+    output.
+
+Usage:
+    parse_nginx_log.py [-o] [--out-format {print, csv}]
+                       [-m] [--mode {request_by_ip, request_by_hour}]
+                       [-h] [--help]
+                       FILENAME [...]
+
+Parameters:
+    FILENAME
+        Gets the name or names of the files to be processed.
+
+Options:
+    -h
+        Print help on the module and exit.
+
+    --help
+        Print detailed help on the modulw and exit.
+
+    -o, --out-format {print, csv}
+        Switches the output format of the print or to csv.
+        Take the value 'print' or 'csv'.The default value
+        is 'print'.
+
+    -m, --mode {requests_by_ip, requests_by_hour}
+        Sets the processing mode of the log-file:
+            - requests_by_ip: counts the number of HTTP-
+              requests from each ip;
+            - requests_by_hour: counts the number of
+              requests on the cock;
+        Take the value 'requests_by_ip' or 'requests_by_hour'.
+        The default value is 'requests_by_ip'
+
+Examples:
+    To run module is necessary for it to pass parameter
+    FILENAME:
+        parse_nginx_log.py FILENAME
+
+    To run the module and output information to file csv:
+        parse_nginx_log.py FILENAME --out-format csv
+"""
+
+
 import re
 import argparse
 import gzip
@@ -7,15 +58,43 @@ import signal
 
 # import timer
 
-
+################
+# Regex format #
+################
 REGEX_IP = re.compile(
     r'(((25[0-5]|2[0-4]\d|[01]?\d\d?)\.){3}(25[0-5]|2[0-4]\d|[01]?\d\d?))( )'
 )
 REGEX_HTTP = re.compile(r'[httpHTTP]{4}')
 REGEX_DATE_TIME = re.compile(r'(\d{2})/(\w{3})/(\d{4}):(2[0-3]|[01]\d)')
 IS_GZIP = re.compile(r'(.gz)$')
+################
 
 OUT_CSV = 'output.{0}.csv'
+
+
+##################
+# Module classes #
+##################
+class ModuleHelpAction(argparse._HelpAction):
+    """The class for overriding method __call__
+    """
+    def __call__(self, parser, namespace, values, option_string=None):
+        if 'help' in option_string:
+            parser.print_help_detailed()
+            parser.exit()
+        parser.print_help()
+        parser.exit()
+
+
+class ModuleParser(argparse.ArgumentParser):
+    """The class add method print_help_detailed
+    """
+    @classmethod
+    def print_help_detailed(cls):
+        """Print help documentation
+        """
+        sys.stdout.write(__doc__)
+##################
 
 
 def sigint_hundler(error, stack):
@@ -37,18 +116,6 @@ def run_function(function, options):
         print_csv(result, options.mode)
 
 
-def read_files(file_list):
-    for name_file in file_list:
-        if IS_GZIP.search(name_file):
-            function_open = gzip.open
-        else:
-            function_open = open
-
-        with function_open(name_file) as log_file:
-            for line in log_file:
-                yield line
-
-
 def cmp_http(x, y):
     return cmp(x[1], y[1])
 
@@ -68,6 +135,9 @@ def add_item(dict_, key):
         dict_[key] = 1
 
 
+#######################
+# Processing function #
+#######################
 def requests_by_ip(log_file):
     result = {}
     group_ip = 1
@@ -90,6 +160,19 @@ def requests_by_hour(log_file):
     return sorted(result.items(), cmp=cmp_date_time)
 
 
+def read_files(file_list):
+    for name_file in file_list:
+        if IS_GZIP.search(name_file):
+            function_open = gzip.open
+        else:
+            function_open = open
+
+        with function_open(name_file) as log_file:
+            for line in log_file:
+                yield line
+#######################
+
+
 CHOICES = {
     'requests_by_ip': requests_by_ip,
     'requests_by_hour': requests_by_hour
@@ -97,13 +180,27 @@ CHOICES = {
 
 
 def parse_args():
-    parser = argparse.ArgumentParser()
+    """parse command line parameters passed to the module.
+    """
+    parser = ModuleParser(add_help=False)
 
     parser.add_argument(
-        '-o', '--out-format', type=str, default='print', choices=['print', 'csv']
+        '-o', '--out-format', type=str, default='print',
+        choices=['print', 'csv'], help='Selecting the output result'
     )
-    parser.add_argument('-m', '--mode', type=str, choices=CHOICES.keys())
-    parser.add_argument('files', nargs='+')
+    parser.add_argument(
+        '-h', '--help', action=ModuleHelpAction,
+        help='Show help message and exit'
+    )
+    parser.add_argument(
+        '-m', '--mode', type=str, choices=CHOICES.keys(),
+        default='requests_by_ip',
+        help='Selecting the mode processing log-files'
+    )
+    parser.add_argument(
+        'files', nargs='+', metavar='FILENAME',
+        help='The names of files to process'
+    )
 
     return parser.parse_args()
 
@@ -113,7 +210,6 @@ def main():
     signal.signal(signal.SIGINT, sigint_hundler)
 
     options = parse_args()
-    # file_list = options.file_list.split(',')
 
     if not options.mode:
         sys.stderr.write('--> Search mode unknown <--\n')
