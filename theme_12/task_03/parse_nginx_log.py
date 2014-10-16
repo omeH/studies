@@ -69,8 +69,6 @@ REGEX_DATE_TIME = re.compile(r'(\d{2})/(\w{3})/(\d{4}):(2[0-3]|[01]\d)')
 IS_GZIP = re.compile(r'(.gz)$')
 ################
 
-OUT_CSV = 'output.{0}.csv'
-
 
 ##################
 # Module classes #
@@ -102,10 +100,9 @@ def sigint_handler(error, stack):
     sys.exit(1)
 
 
-def print_csv(result, info):
-    with open(OUT_CSV.format(info), 'w') as out_file:
-        for line in result:
-            out_file.write('{0},{1}\n'.format(*line))
+def print_csv(result):
+    for line in result:
+        sys.stdout.write('{0},{1}\n'.format(*line))
 
 
 def run_function(function, options):
@@ -113,8 +110,7 @@ def run_function(function, options):
     if options.out_format == 'print':
         pprint.pprint(result)
     else:
-        print_csv(result, options.mode)
-        pprint.pprint(result)
+        print_csv(result)
 
 
 def cmp_http(x, y):
