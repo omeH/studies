@@ -15,13 +15,13 @@ class SQLInjection(Exception):
 
 class WorkWithDB(object):
 
-    sql_injection = re.compile(r'^[a-zA-Z\d]*|(\d{4}(-\d{2}){2})$')
+    sql_injection = re.compile(r'^[a-zA-Z\d_]*$')
     dsn_format = 'dbname={0} user={1} password={2} host={3}'
 
-    SELECT_QUERY = 'SELECT {0} FROM {1};'
-    INSERT_QUERY = 'INSERT INTO {0} ({1}) VALUES {2};'
-    UPDATE_QUERY = 'UPDATE {0} SET {1} WHERE {2}'
-    DELETE_QUERY = 'DELETE FROM {0} WHERE {1}'
+    SELECT_QUERY = "SELECT {0} FROM {1};"
+    INSERT_QUERY = "INSERT INTO {0} ({1}) VALUES ({2});"
+    UPDATE_QUERY = "UPDATE {0} SET {1} WHERE {2};"
+    DELETE_QUERY = "DELETE FROM {0} WHERE {1};"
 
     DBNAME_KEY = 'dbname'
     USER_KEY = 'user'
@@ -59,9 +59,9 @@ class WorkWithDB(object):
         if self.connection:
             self.connection.close()
 
-    def _is_execute(self, query, **params):
+    def _is_execute(self, query, *params):
         try:
-            self.cursor.execute(query, **params)
+            self.cursor.execute(query, *params)
         except psycopg2.DatabaseError as error:
             sys.stdout.write(str(error))
             return False
@@ -91,55 +91,44 @@ class WorkWithDB(object):
                     break
                 sys.stdout.write(str(line) + '\n')
 
-    def insert(self, table, columns, data):
-        self._correct_data([table] + columns)
-        for item in data:
-            self._correct_data(item)
-
-        for i in xrange(len(data)):
-            for j in xrange(len(data[i])):
-                data[i][j] = "'{0}'".format(data[i][j])
-
-        values_list = [",".join(item) for item in data]
-        values = "({0})".format(
-            "),(".join(values_list)
-        )
+    def insert(self, table, data):
+        self._correct_data([table] + data.keys())
 
         query = self.INSERT_QUERY.format(
-            table, ','.join(columns), values
+            table,
+            ', '.join(data.keys()),
+            ', '.join(['%({0})s'.format(key) for key in data])
         )
 
-        if self._is_execute(query):
+        if self._is_execute(query, data):
             self.connection.commit()
         else:
             self.connection.rollback()
 
     def update(self, table, data, condition):
-        self._correct_data([table] + condition)
-        for item in data:
-            self._correct_data(item)
+        self._correct_data([table] + data.keys() + condition.keys())
 
-        for index in xrange(len(data)):
-            data[index] = "{0} = '{1}'".format(*data[index])
+        query = self.UPDATE_QUERY.format(
+            table,
+            ', '.join(['{0} = %({0})s'.format(key) for key in data]),
+            '{0} = %({0})s'.format(condition.keys()[0])
+        )
+        data.setdefault(*condition.items()[0])
 
-        update_set = ','.join(data)
-        update_where = "{0} = '{1}'".format(*condition)
-
-        query = self.UPDATE_QUERY.format(table, update_set, update_where)
-
-        if self._is_execute(query):
+        if self._is_execute(query, data):
             self.connection.commit()
         else:
             self.connection.rollback()
 
     def delete(self, table, condition):
-        self._correct_data([table] + condition)
+        self._correct_data([table] + condition.keys())
 
-        delete_where = "{0} = '{1}'".format(*condition)
+        query = self.DELETE_QUERY.format(
+            table,
+            '{0} = %({0})s'.format(condition.keys()[0])
+        )
 
-        query = self.DELETE_QUERY.format(table, delete_where)
-
-        if self._is_execute(query):
+        if self._is_execute(query, condition):
             self.connection.commit()
         else:
             self.connection.rollback()
@@ -176,14 +165,15 @@ def main():
         w.connect()
         w.select(TABLE, COLUMNS)
         print
-        w.insert(TABLE, ['id', 'data', 'date', 'name'],
-                 [['8', 'test python', '21-10-2014', 'python']])
+        w.insert(TABLE, {'id': 8, 'data': 'test python',
+                         'date': psycopg2.Date(2014, 10, 22),
+                         'name': 'python'})
         w.select(TABLE, COLUMNS)
         print
-        w.update(TABLE, [['name', 'python']], ['id', '7'])
+        w.update(TABLE, {'name': 'python2.7', 'data': 'string'}, {'id': '8'})
         w.select(TABLE, COLUMNS)
         print
-        w.delete(TABLE, ['id', '8'])
+        w.delete(TABLE, {'id': '8'})
         w.select(TABLE, COLUMNS)
     except psycopg2.DatabaseError as error:
         print(error)
