@@ -160,10 +160,10 @@ ALTER SEQUENCE const_achievement_id_seq OWNED BY const_achievement.id;
 
 
 --
--- Name: const_game_type; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+-- Name: const_event_type; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
 --
 
-CREATE TABLE const_game_type (
+CREATE TABLE const_event_type (
     id smallint NOT NULL,
     type character varying(20),
     created timestamp(0) without time zone,
@@ -171,41 +171,41 @@ CREATE TABLE const_game_type (
 );
 
 
-ALTER TABLE public.const_game_type OWNER TO postgres;
+ALTER TABLE public.const_event_type OWNER TO postgres;
 
 --
--- Name: TABLE const_game_type; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: TABLE const_event_type; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE const_game_type IS 'Possible modes of game';
-
-
---
--- Name: COLUMN const_game_type.id; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN const_game_type.id IS 'Game type ID number';
+COMMENT ON TABLE const_event_type IS 'Possible modes of game';
 
 
 --
--- Name: COLUMN const_game_type.type; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN const_event_type.id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN const_game_type.type IS 'Mode of game';
-
-
---
--- Name: COLUMN const_game_type.created; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN const_game_type.created IS 'Time created row';
+COMMENT ON COLUMN const_event_type.id IS 'Game type ID number';
 
 
 --
--- Name: COLUMN const_game_type.updated; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN const_event_type.type; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN const_game_type.updated IS 'Time last updated row';
+COMMENT ON COLUMN const_event_type.type IS 'Mode of game';
+
+
+--
+-- Name: COLUMN const_event_type.created; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN const_event_type.created IS 'Time created row';
+
+
+--
+-- Name: COLUMN const_event_type.updated; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN const_event_type.updated IS 'Time last updated row';
 
 
 --
@@ -226,7 +226,7 @@ ALTER TABLE public.const_game_type_id_seq OWNER TO postgres;
 -- Name: const_game_type_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
 --
 
-ALTER SEQUENCE const_game_type_id_seq OWNED BY const_game_type.id;
+ALTER SEQUENCE const_game_type_id_seq OWNED BY const_event_type.id;
 
 
 --
@@ -333,7 +333,7 @@ ALTER TABLE public.const_platform OWNER TO postgres;
 -- Name: TABLE const_platform; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE const_platform IS 'List of the supported platforms';
+COMMENT ON TABLE const_platform IS 'A list of the supported platforms';
 
 
 --
@@ -391,8 +391,8 @@ ALTER SEQUENCE const_platform_id_seq OWNED BY const_platform.id;
 
 CREATE TABLE game_event (
     id integer NOT NULL,
-    game_type_id smallint,
-    composition text,
+    event_type_id smallint,
+    event_data json,
     created timestamp(0) without time zone
 );
 
@@ -403,7 +403,7 @@ ALTER TABLE public.game_event OWNER TO postgres;
 -- Name: TABLE game_event; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE game_event IS 'Information about the game event';
+COMMENT ON TABLE game_event IS ' Information about the game event';
 
 
 --
@@ -414,17 +414,17 @@ COMMENT ON COLUMN game_event.id IS 'Game event ID number';
 
 
 --
--- Name: COLUMN game_event.game_type_id; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN game_event.event_type_id; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN game_event.game_type_id IS 'Game type ID number';
+COMMENT ON COLUMN game_event.event_type_id IS 'Event type ID number';
 
 
 --
--- Name: COLUMN game_event.composition; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN game_event.event_data; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN game_event.composition IS 'Composition of players or teams';
+COMMENT ON COLUMN game_event.event_data IS 'Information about event';
 
 
 --
@@ -556,8 +556,8 @@ ALTER SEQUENCE game_session_id_seq OWNED BY game_session.id;
 CREATE TABLE player (
     id integer NOT NULL,
     nickname character varying(20),
-    game integer,
-    win integer,
+    game_count integer,
+    victory_count integer,
     rating integer,
     league_id smallint,
     created timestamp(0) without time zone,
@@ -589,10 +589,17 @@ COMMENT ON COLUMN player.nickname IS 'Nickname player';
 
 
 --
--- Name: COLUMN player.game; Type: COMMENT; Schema: public; Owner: postgres
+-- Name: COLUMN player.game_count; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON COLUMN player.game IS 'Number of games played';
+COMMENT ON COLUMN player.game_count IS 'Number of games played';
+
+
+--
+-- Name: COLUMN player.victory_count; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN player.victory_count IS 'Number of games won';
 
 
 --
@@ -631,9 +638,7 @@ CREATE TABLE player_achievement (
     id integer NOT NULL,
     player_id integer,
     achievement_id smallint,
-    date date,
-    created timestamp(0) without time zone,
-    updated timestamp(0) without time zone
+    created timestamp(0) without time zone
 );
 
 
@@ -668,24 +673,10 @@ COMMENT ON COLUMN player_achievement.achievement_id IS 'Achievement ID number';
 
 
 --
--- Name: COLUMN player_achievement.date; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN player_achievement.date IS 'Date the complete player achievement';
-
-
---
 -- Name: COLUMN player_achievement.created; Type: COMMENT; Schema: public; Owner: postgres
 --
 
 COMMENT ON COLUMN player_achievement.created IS 'Time created row';
-
-
---
--- Name: COLUMN player_achievement.updated; Type: COMMENT; Schema: public; Owner: postgres
---
-
-COMMENT ON COLUMN player_achievement.updated IS 'Time last updated row';
 
 
 --
@@ -741,7 +732,7 @@ ALTER TABLE ONLY const_achievement ALTER COLUMN id SET DEFAULT nextval('const_ac
 -- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
-ALTER TABLE ONLY const_game_type ALTER COLUMN id SET DEFAULT nextval('const_game_type_id_seq'::regclass);
+ALTER TABLE ONLY const_event_type ALTER COLUMN id SET DEFAULT nextval('const_game_type_id_seq'::regclass);
 
 
 --
@@ -802,10 +793,10 @@ SELECT pg_catalog.setval('const_achievement_id_seq', 1, false);
 
 
 --
--- Data for Name: const_game_type; Type: TABLE DATA; Schema: public; Owner: postgres
+-- Data for Name: const_event_type; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY const_game_type (id, type, created, updated) FROM stdin;
+COPY const_event_type (id, type, created, updated) FROM stdin;
 2	player vs pc	2014-10-27 19:10:37	\N
 3	player vs player	2014-10-27 19:10:37	\N
 4	team vs team	2014-10-27 19:10:37	\N
@@ -867,7 +858,7 @@ SELECT pg_catalog.setval('const_platform_id_seq', 4, true);
 -- Data for Name: game_event; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY game_event (id, game_type_id, composition, created) FROM stdin;
+COPY game_event (id, event_type_id, event_data, created) FROM stdin;
 \.
 
 
@@ -897,7 +888,7 @@ SELECT pg_catalog.setval('game_session_id_seq', 1, false);
 -- Data for Name: player; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY player (id, nickname, game, win, rating, league_id, created, updated) FROM stdin;
+COPY player (id, nickname, game_count, victory_count, rating, league_id, created, updated) FROM stdin;
 1	testick	15	10	53	3	2014-10-28 15:41:00	2014-10-28 15:58:09
 \.
 
@@ -906,7 +897,7 @@ COPY player (id, nickname, game, win, rating, league_id, created, updated) FROM 
 -- Data for Name: player_achievement; Type: TABLE DATA; Schema: public; Owner: postgres
 --
 
-COPY player_achievement (id, player_id, achievement_id, date, created, updated) FROM stdin;
+COPY player_achievement (id, player_id, achievement_id, created) FROM stdin;
 \.
 
 
@@ -936,7 +927,7 @@ ALTER TABLE ONLY const_achievement
 -- Name: const_game_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
 --
 
-ALTER TABLE ONLY const_game_type
+ALTER TABLE ONLY const_event_type
     ADD CONSTRAINT const_game_type_pkey PRIMARY KEY (id);
 
 
@@ -1003,17 +994,17 @@ CREATE TRIGGER const_achievement_updated BEFORE UPDATE ON const_achievement FOR 
 
 
 --
--- Name: const_game_type_created; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: const_event_type_created; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER const_game_type_created BEFORE INSERT ON const_game_type FOR EACH ROW EXECUTE PROCEDURE set_created_timestamp();
+CREATE TRIGGER const_event_type_created BEFORE INSERT ON const_event_type FOR EACH ROW EXECUTE PROCEDURE set_created_timestamp();
 
 
 --
--- Name: const_game_type_updated; Type: TRIGGER; Schema: public; Owner: postgres
+-- Name: const_event_type_updated; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
-CREATE TRIGGER const_game_type_updated BEFORE UPDATE ON const_game_type FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();
+CREATE TRIGGER const_event_type_updated BEFORE UPDATE ON const_event_type FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();
 
 
 --
@@ -1066,13 +1057,6 @@ CREATE TRIGGER player_achievement_created BEFORE INSERT ON player_achievement FO
 
 
 --
--- Name: player_achievement_updated; Type: TRIGGER; Schema: public; Owner: postgres
---
-
-CREATE TRIGGER player_achievement_updated BEFORE UPDATE ON player_achievement FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();
-
-
---
 -- Name: player_created; Type: TRIGGER; Schema: public; Owner: postgres
 --
 
@@ -1094,11 +1078,11 @@ CREATE TRIGGER player_updated BEFORE UPDATE ON player FOR EACH ROW EXECUTE PROCE
 
 
 --
--- Name: game_event_game_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: game_event_event_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY game_event
-    ADD CONSTRAINT game_event_game_type_id_fkey FOREIGN KEY (game_type_id) REFERENCES const_game_type(id);
+    ADD CONSTRAINT game_event_event_type_id_fkey FOREIGN KEY (event_type_id) REFERENCES const_event_type(id);
 
 
 --
