@@ -177,7 +177,7 @@ ALTER TABLE public.const_event_type OWNER TO postgres;
 -- Name: TABLE const_event_type; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE const_event_type IS 'Possible modes of game';
+COMMENT ON TABLE const_event_type IS 'List of possible event of game';
 
 
 --
@@ -295,6 +295,84 @@ COMMENT ON COLUMN const_league.updated IS 'Time last updated row';
 
 
 --
+-- Name: const_league_bonus; Type: TABLE; Schema: public; Owner: postgres; Tablespace: 
+--
+
+CREATE TABLE const_league_bonus (
+    id smallint NOT NULL,
+    league_id smallint,
+    points smallint,
+    created timestamp(0) without time zone,
+    updated timestamp(0) without time zone
+);
+
+
+ALTER TABLE public.const_league_bonus OWNER TO postgres;
+
+--
+-- Name: TABLE const_league_bonus; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON TABLE const_league_bonus IS 'List of relevant bonuses leagues';
+
+
+--
+-- Name: COLUMN const_league_bonus.id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN const_league_bonus.id IS 'League bonus ID number';
+
+
+--
+-- Name: COLUMN const_league_bonus.league_id; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN const_league_bonus.league_id IS 'League ID number';
+
+
+--
+-- Name: COLUMN const_league_bonus.points; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN const_league_bonus.points IS 'Number of points awarded for a victory in the game';
+
+
+--
+-- Name: COLUMN const_league_bonus.created; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN const_league_bonus.created IS 'Time created row';
+
+
+--
+-- Name: COLUMN const_league_bonus.updated; Type: COMMENT; Schema: public; Owner: postgres
+--
+
+COMMENT ON COLUMN const_league_bonus.updated IS 'Time last updated row';
+
+
+--
+-- Name: const_league_bonuses_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
+--
+
+CREATE SEQUENCE const_league_bonuses_id_seq
+    START WITH 1
+    INCREMENT BY 1
+    NO MINVALUE
+    NO MAXVALUE
+    CACHE 1;
+
+
+ALTER TABLE public.const_league_bonuses_id_seq OWNER TO postgres;
+
+--
+-- Name: const_league_bonuses_id_seq; Type: SEQUENCE OWNED BY; Schema: public; Owner: postgres
+--
+
+ALTER SEQUENCE const_league_bonuses_id_seq OWNED BY const_league_bonus.id;
+
+
+--
 -- Name: const_league_id_seq; Type: SEQUENCE; Schema: public; Owner: postgres
 --
 
@@ -333,7 +411,7 @@ ALTER TABLE public.const_platform OWNER TO postgres;
 -- Name: TABLE const_platform; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE const_platform IS 'A list of the supported platforms';
+COMMENT ON TABLE const_platform IS 'List of the supported platforms';
 
 
 --
@@ -403,7 +481,7 @@ ALTER TABLE public.game_event OWNER TO postgres;
 -- Name: TABLE game_event; Type: COMMENT; Schema: public; Owner: postgres
 --
 
-COMMENT ON TABLE game_event IS ' Information about the game event';
+COMMENT ON TABLE game_event IS 'Information about the game event';
 
 
 --
@@ -746,6 +824,13 @@ ALTER TABLE ONLY const_league ALTER COLUMN id SET DEFAULT nextval('const_league_
 -- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
 --
 
+ALTER TABLE ONLY const_league_bonus ALTER COLUMN id SET DEFAULT nextval('const_league_bonuses_id_seq'::regclass);
+
+
+--
+-- Name: id; Type: DEFAULT; Schema: public; Owner: postgres
+--
+
 ALTER TABLE ONLY const_platform ALTER COLUMN id SET DEFAULT nextval('const_platform_id_seq'::regclass);
 
 
@@ -826,6 +911,30 @@ COPY const_league (id, league, rating_min, rating_max, created, updated) FROM st
 8	platinum	10000	49999	2014-10-27 20:06:46	2014-10-28 11:57:57
 9	diamond	50000	99999	2014-10-28 11:53:05	2014-10-28 11:58:11
 \.
+
+
+--
+-- Data for Name: const_league_bonus; Type: TABLE DATA; Schema: public; Owner: postgres
+--
+
+COPY const_league_bonus (id, league_id, points, created, updated) FROM stdin;
+1	1	1	2014-10-29 19:40:15	\N
+2	2	2	2014-10-29 19:40:15	\N
+3	3	2	2014-10-29 19:40:15	\N
+4	4	2	2014-10-29 19:40:15	\N
+5	5	3	2014-10-29 19:40:15	\N
+6	6	3	2014-10-29 19:40:15	\N
+7	7	4	2014-10-29 19:40:15	\N
+8	8	5	2014-10-29 19:40:15	\N
+9	9	5	2014-10-29 19:40:15	\N
+\.
+
+
+--
+-- Name: const_league_bonuses_id_seq; Type: SEQUENCE SET; Schema: public; Owner: postgres
+--
+
+SELECT pg_catalog.setval('const_league_bonuses_id_seq', 9, true);
 
 
 --
@@ -916,35 +1025,19 @@ SELECT pg_catalog.setval('player_id_seq', 4, true);
 
 
 --
--- Name: const_achievement_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: achievement_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
 --
 
 ALTER TABLE ONLY const_achievement
-    ADD CONSTRAINT const_achievement_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT achievement_pkey PRIMARY KEY (id);
 
 
 --
--- Name: const_game_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+-- Name: event_type_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
 --
 
 ALTER TABLE ONLY const_event_type
-    ADD CONSTRAINT const_game_type_pkey PRIMARY KEY (id);
-
-
---
--- Name: const_league_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
---
-
-ALTER TABLE ONLY const_league
-    ADD CONSTRAINT const_league_pkey PRIMARY KEY (id);
-
-
---
--- Name: const_platform_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
---
-
-ALTER TABLE ONLY const_platform
-    ADD CONSTRAINT const_platform_pkey PRIMARY KEY (id);
+    ADD CONSTRAINT event_type_pkey PRIMARY KEY (id);
 
 
 --
@@ -961,6 +1054,30 @@ ALTER TABLE ONLY game_event
 
 ALTER TABLE ONLY game_session
     ADD CONSTRAINT game_session_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: league_bonus_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY const_league_bonus
+    ADD CONSTRAINT league_bonus_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: league_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY const_league
+    ADD CONSTRAINT league_pkey PRIMARY KEY (id);
+
+
+--
+-- Name: platform_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres; Tablespace: 
+--
+
+ALTER TABLE ONLY const_platform
+    ADD CONSTRAINT platform_pkey PRIMARY KEY (id);
 
 
 --
@@ -1005,6 +1122,20 @@ CREATE TRIGGER const_event_type_created BEFORE INSERT ON const_event_type FOR EA
 --
 
 CREATE TRIGGER const_event_type_updated BEFORE UPDATE ON const_event_type FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();
+
+
+--
+-- Name: const_league_bonuses_created; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER const_league_bonuses_created BEFORE INSERT ON const_league_bonus FOR EACH ROW EXECUTE PROCEDURE set_created_timestamp();
+
+
+--
+-- Name: const_league_bonuses_updated; Type: TRIGGER; Schema: public; Owner: postgres
+--
+
+CREATE TRIGGER const_league_bonuses_updated BEFORE UPDATE ON const_league_bonus FOR EACH ROW EXECUTE PROCEDURE set_updated_timestamp();
 
 
 --
@@ -1078,51 +1209,59 @@ CREATE TRIGGER player_updated BEFORE UPDATE ON player FOR EACH ROW EXECUTE PROCE
 
 
 --
--- Name: game_event_event_type_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: achievement_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY player_achievement
+    ADD CONSTRAINT achievement_fkey FOREIGN KEY (achievement_id) REFERENCES const_achievement(id);
+
+
+--
+-- Name: event_type_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY game_event
-    ADD CONSTRAINT game_event_event_type_id_fkey FOREIGN KEY (event_type_id) REFERENCES const_event_type(id);
+    ADD CONSTRAINT event_type_fkey FOREIGN KEY (event_type_id) REFERENCES const_event_type(id);
 
 
 --
--- Name: game_session_platform_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY game_session
-    ADD CONSTRAINT game_session_platform_id_fkey FOREIGN KEY (platform_id) REFERENCES const_platform(id);
-
-
---
--- Name: game_session_player_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY game_session
-    ADD CONSTRAINT game_session_player_id_fkey FOREIGN KEY (player_id) REFERENCES player(id);
-
-
---
--- Name: player_achievement_achievement_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY player_achievement
-    ADD CONSTRAINT player_achievement_achievement_id_fkey FOREIGN KEY (achievement_id) REFERENCES const_achievement(id);
-
-
---
--- Name: player_achievement_player_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
---
-
-ALTER TABLE ONLY player_achievement
-    ADD CONSTRAINT player_achievement_player_id_fkey FOREIGN KEY (player_id) REFERENCES player(id);
-
-
---
--- Name: player_league_id_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+-- Name: league_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY player
-    ADD CONSTRAINT player_league_id_fkey FOREIGN KEY (league_id) REFERENCES const_league(id);
+    ADD CONSTRAINT league_fkey FOREIGN KEY (league_id) REFERENCES const_league(id);
+
+
+--
+-- Name: league_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY const_league_bonus
+    ADD CONSTRAINT league_fkey FOREIGN KEY (league_id) REFERENCES const_league(id);
+
+
+--
+-- Name: platform_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY game_session
+    ADD CONSTRAINT platform_fkey FOREIGN KEY (platform_id) REFERENCES const_platform(id);
+
+
+--
+-- Name: player_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY game_session
+    ADD CONSTRAINT player_fkey FOREIGN KEY (player_id) REFERENCES player(id);
+
+
+--
+-- Name: player_fkey; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY player_achievement
+    ADD CONSTRAINT player_fkey FOREIGN KEY (player_id) REFERENCES player(id);
 
 
 --
