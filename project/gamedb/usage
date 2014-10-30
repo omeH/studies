@@ -1,0 +1,5 @@
+Using the filename.dump:
+    pg_restore -d newdb filename.dump
+
+Using the filename.sql:
+    psql -f filename.sql
